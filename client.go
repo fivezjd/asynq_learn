@@ -150,9 +150,9 @@ func (t deadlineOption) Value() interface{} { return time.Time(t) }
 // TTL duration must be greater than or equal to 1 second.
 //
 // Uniqueness of a task is based on the following properties:
-//     - Task Type
-//     - Task Payload
-//     - Queue Name
+//   - Task Type
+//   - Task Payload
+//   - Queue Name
 func Unique(ttl time.Duration) Option {
 	return uniqueOption(ttl)
 }
@@ -222,7 +222,7 @@ type option struct {
 	taskID    string
 	timeout   time.Duration
 	deadline  time.Time
-	uniqueTTL time.Duration
+	uniqueTTL time.Duration // 唯一锁的持有时间
 	processAt time.Time
 	retention time.Duration
 	group     string
@@ -280,6 +280,7 @@ func composeOptions(opts ...Option) (option, error) {
 			}
 			res.group = key
 		default:
+			// return res, errors.New("不存在的参数类型")
 			// ignore unexpected option
 		}
 	}
@@ -322,6 +323,10 @@ func (c *Client) Close() error {
 // If no ProcessAt or ProcessIn options are provided, the task will be pending immediately.
 //
 // Enqueue uses context.Background internally; to specify the context, use EnqueueContext.
+// 排队将给定任务排队到队列。如果任务成功排队，则排队将返回 TaskInfo 和 nil 错误，否则返回非 nil 错误。参数 select 指定任务处理的行为。
+// 如果存在冲突的选项值，则最后一个值将覆盖其他值。提供给 NewTask 的任何选项都可以被传递给 Enqueue 的选项覆盖。
+// 默认情况下，最大重试次数设置为 25，超时设置为 30 分钟。如果未提供 ProcessAt 或 ProcessIn 选项，则任务将立即挂起。排队使用上下文。
+// 内部背景;若要指定上下文，请使用 EnqueueContext。
 func (c *Client) Enqueue(task *Task, opts ...Option) (*TaskInfo, error) {
 	return c.EnqueueContext(context.Background(), task, opts...)
 }
@@ -338,6 +343,10 @@ func (c *Client) Enqueue(task *Task, opts ...Option) (*TaskInfo, error) {
 // If no ProcessAt or ProcessIn options are provided, the task will be pending immediately.
 //
 // The first argument context applies to the enqueue operation. To specify task timeout and deadline, use Timeout and Deadline option instead.
+// EnqueueContext 将给定任务排队到队列。如果任务成功排队，则 EnqueueContext 返回 TaskInfo 和 nil 错误，否则返回非 nil 错误。
+// 参数 select 指定任务处理的行为。如果存在冲突的选项值，则最后一个值将覆盖其他值。提供给 NewTask 的任何选项都可以被传递给 Enqueue 的选项覆盖。
+// 默认情况下，最大重试次数设置为 25，超时设置为 30 分钟。如果未提供 ProcessAt 或 ProcessIn 选项，则任务将立即挂起。
+// 第一个参数上下文适用于排队操作。若要指定任务超时和截止时间，请改用“超时和截止时间”选项
 func (c *Client) EnqueueContext(ctx context.Context, task *Task, opts ...Option) (*TaskInfo, error) {
 	if task == nil {
 		return nil, fmt.Errorf("task cannot be nil")
@@ -346,6 +355,15 @@ func (c *Client) EnqueueContext(ctx context.Context, task *Task, opts ...Option)
 		return nil, fmt.Errorf("task typename cannot be empty")
 	}
 	// merge task options with the options provided at enqueue time.
+	// 覆盖默认配置 然后返回配置
+	//res := option{
+	//	retry:     defaultMaxRetry,
+	//	queue:     base.DefaultQueueName,
+	//	taskID:    uuid.NewString(),
+	//	timeout:   0, // do not set to defaultTimeout here
+	//	deadline:  time.Time{},
+	//	processAt: time.Now(),
+	//}
 	opts = append(task.opts, opts...)
 	opt, err := composeOptions(opts...)
 	if err != nil {
@@ -359,29 +377,30 @@ func (c *Client) EnqueueContext(ctx context.Context, task *Task, opts ...Option)
 	if opt.timeout != 0 {
 		timeout = opt.timeout
 	}
+	// 没有截止时间也没有设置超时时间则将超时时间设置为默认时间
 	if deadline.Equal(noDeadline) && timeout == noTimeout {
 		// If neither deadline nor timeout are set, use default timeout.
-		timeout = defaultTimeout
+		timeout = defaultTimeout // 30分钟超时
 	}
 	var uniqueKey string
 	if opt.uniqueTTL > 0 {
 		uniqueKey = base.UniqueKey(opt.queue, task.Type(), task.Payload())
 	}
 	msg := &base.TaskMessage{
-		ID:        opt.taskID,
-		Type:      task.Type(),
-		Payload:   task.Payload(),
-		Queue:     opt.queue,
-		Retry:     opt.retry,
+		ID:        opt.taskID,     // 唯一UUID
+		Type:      task.Type(),    // 类型值（键）
+		Payload:   task.Payload(), // 消息载体
+		Queue:     opt.queue,      // 队列名称
+		Retry:     opt.retry,      // 重试次数
 		Deadline:  deadline.Unix(),
-		Timeout:   int64(timeout.Seconds()),
-		UniqueKey: uniqueKey,
+		Timeout:   int64(timeout.Seconds()), // 超时时间
+		UniqueKey: uniqueKey,                // 基于队列名称、任务类型、消息体生成的的md5唯一值
 		GroupKey:  opt.group,
-		Retention: int64(opt.retention.Seconds()),
+		Retention: int64(opt.retention.Seconds()), // 保留时间
 	}
 	now := time.Now()
 	var state base.TaskState
-	if opt.processAt.After(now) {
+	if opt.processAt.After(now) { // 执行时间大于当前时间时，后续执行
 		err = c.schedule(ctx, msg, opt.processAt, opt.uniqueTTL)
 		state = base.TaskStateScheduled
 	} else if opt.group != "" {
@@ -391,22 +410,24 @@ func (c *Client) EnqueueContext(ctx context.Context, task *Task, opts ...Option)
 		state = base.TaskStateAggregating
 	} else {
 		opt.processAt = now
-		err = c.enqueue(ctx, msg, opt.uniqueTTL)
-		state = base.TaskStatePending
+		err = c.enqueue(ctx, msg, opt.uniqueTTL) // 放入队列
+		state = base.TaskStatePending            // 立即执行
 	}
 	switch {
-	case errors.Is(err, errors.ErrDuplicateTask):
+	case errors.Is(err, errors.ErrDuplicateTask): // 任务已经存在
 		return nil, fmt.Errorf("%w", ErrDuplicateTask)
-	case errors.Is(err, errors.ErrTaskIdConflict):
+	case errors.Is(err, errors.ErrTaskIdConflict): // 任务ID冲突
 		return nil, fmt.Errorf("%w", ErrTaskIDConflict)
 	case err != nil:
 		return nil, err
 	}
+	// 任务消息体 + 任务状态 + 任务执行时间
 	return newTaskInfo(msg, state, opt.processAt, nil), nil
 }
 
 func (c *Client) enqueue(ctx context.Context, msg *base.TaskMessage, uniqueTTL time.Duration) error {
 	if uniqueTTL > 0 {
+		// 锁定执行
 		return c.broker.EnqueueUnique(ctx, msg, uniqueTTL)
 	}
 	return c.broker.Enqueue(ctx, msg)

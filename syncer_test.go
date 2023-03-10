@@ -7,6 +7,7 @@ package asynq
 import (
 	"context"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"sync"
 	"testing"
 	"time"
@@ -23,7 +24,12 @@ func TestSyncer(t *testing.T) {
 		h.NewTaskMessage("gen_thumbnail", nil),
 	}
 	r := setup(t)
-	defer r.Close()
+	defer func(r redis.UniversalClient) {
+		err := r.Close()
+		if err != nil {
+
+		}
+	}(r)
 	rdbClient := rdb.NewRDB(r)
 	h.SeedActiveQueue(t, r, inProgress, base.DefaultQueueName)
 

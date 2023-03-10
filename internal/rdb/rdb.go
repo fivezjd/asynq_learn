@@ -8,6 +8,7 @@ package rdb
 import (
 	"context"
 	"fmt"
+	"log"
 	"math"
 	"time"
 
@@ -69,6 +70,7 @@ func (r *RDB) runScript(ctx context.Context, op errors.Op, script *redis.Script,
 
 // Runs the given script with keys and args and returns the script's return value as int64.
 func (r *RDB) runScriptWithErrorCode(ctx context.Context, op errors.Op, script *redis.Script, keys []string, args ...interface{}) (int64, error) {
+	// 执行lua脚本
 	res, err := script.Run(ctx, r.client, keys, args...).Result()
 	if err != nil {
 		return 0, errors.E(op, errors.Unknown, fmt.Sprintf("redis eval error: %v", err))
@@ -108,17 +110,20 @@ return 1
 // Enqueue adds the given task to the pending list of the queue.
 func (r *RDB) Enqueue(ctx context.Context, msg *base.TaskMessage) error {
 	var op errors.Op = "rdb.Enqueue"
+	// 序列化消息体
 	encoded, err := base.EncodeMessage(msg)
 	if err != nil {
 		return errors.E(op, errors.Unknown, fmt.Sprintf("cannot encode message: %v", err))
 	}
+	// 将消息加入无序集合（全局集合）
 	if err := r.client.SAdd(ctx, base.AllQueues, msg.Queue).Err(); err != nil {
 		return errors.E(op, errors.Unknown, &errors.RedisCommandError{Command: "sadd", Err: err})
 	}
 	keys := []string{
-		base.TaskKey(msg.Queue, msg.ID),
-		base.PendingKey(msg.Queue),
+		base.TaskKey(msg.Queue, msg.ID), // 哈希 msg => 值是编码后的消息
+		base.PendingKey(msg.Queue),      // 列表 "asynq:{default}:pending  队列中的值是任务ID
 	}
+	log.Println(keys)
 	argv := []interface{}{
 		encoded,
 		msg.ID,
@@ -174,6 +179,7 @@ func (r *RDB) EnqueueUnique(ctx context.Context, msg *base.TaskMessage, ttl time
 	if err != nil {
 		return errors.E(op, errors.Internal, "cannot encode task message: %v", err)
 	}
+	// 全局无序集合
 	if err := r.client.SAdd(ctx, base.AllQueues, msg.Queue).Err(); err != nil {
 		return errors.E(op, errors.Unknown, &errors.RedisCommandError{Command: "sadd", Err: err})
 	}
@@ -537,12 +543,23 @@ func (r *RDB) AddToGroup(ctx context.Context, msg *base.TaskMessage, groupKey st
 		base.GroupKey(msg.Queue, groupKey),
 		base.AllGroups(msg.Queue),
 	}
+	log.Println("AddToGroup------start")
+	log.Printf("HSET 的键名称 KEYS[1]:%s asynq:{<qname>}:t:<task_id>", keys[0])
+	log.Printf("ZADD 的键名称 KEYS[2]:%s asynq:{<qname>}:g:<group_key>", keys[1])
+	log.Printf("SADD 的键名称 KEYS[3]:%s asynq:{<qname>}:groups", keys[2])
+
 	argv := []interface{}{
 		encoded,
 		msg.ID,
 		r.clock.Now().Unix(),
 		groupKey,
 	}
+	log.Printf("HSET msg对应的字段 ARGV[1]:%s task message data", argv[0])
+	log.Printf("ZADD %s 对应的值 ARGV[2]:%s task message data", keys[1], argv[1])
+	log.Printf("ZADD %s 对应的分数 ARGV[3]:%s current time in Unix time", keys[1], argv[2])
+	log.Printf("HSET group对应的字段 ARGV[4]:%s group key", argv[3])
+	log.Printf("SADD %s 对应的字段 ARGV[4]:%s group key", keys[2], argv[3])
+	log.Println("AddToGroup-------end")
 	n, err := r.runScriptWithErrorCode(ctx, op, addToGroupCmd, keys, argv...)
 	if err != nil {
 		return err
@@ -1002,10 +1019,10 @@ func (r *RDB) ListGroups(qname string) ([]string, error) {
 // and put them in an aggregation set. Additionally, if the creation of aggregation set
 // empties the group, it will clear the group name from the all groups set.
 //
-// KEYS[1] -> asynq:{<qname>}:g:<gname>
-// KEYS[2] -> asynq:{<qname>}:g:<gname>:<aggregation_set_id>
+// KEYS[1] -> asynq:{<qname>}:g:<gname>  所有未处理的成员
+// KEYS[2] -> asynq:{<qname>}:g:<gname>:<aggregation_set_id>  已经处理的成员
 // KEYS[3] -> asynq:{<qname>}:aggregation_sets
-// KEYS[4] -> asynq:{<qname>}:groups
+// KEYS[4] -> asynq:{<qname>}:groups  存放所有组的名称在一个无序的集合中
 // -------
 // ARGV[1] -> max group size
 // ARGV[2] -> max group delay in unix time

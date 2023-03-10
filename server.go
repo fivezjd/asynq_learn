@@ -213,7 +213,9 @@ type Config struct {
 	// GroupMaxSize specifies the maximum number of tasks that can be aggregated into a single task within a group.
 	// If GroupMaxSize is reached, the server will aggregate the tasks into one immediately.
 	//
-	// If unset or zero, no size limit is used.
+	// If unset or zero, no size limit is used
+	// GroupMaxSize 指定可以聚合到组中单个任务的最大任务数。
+	// 如果达到 GroupMaxSize，服务器将立即将任务聚合为一个。如果未设置或为零，则不使用大小限制。
 	GroupMaxSize int
 
 	// GroupAggregator specifies the aggregation function used to aggregate multiple tasks in a group into one task.

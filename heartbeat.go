@@ -23,6 +23,7 @@ type heartbeater struct {
 	clock  timeutil.Clock
 
 	// channel to communicate back to the long running "heartbeater" goroutine.
+	// 用于与长时间运行的“心跳器”GoRoutine进行通信。
 	done chan struct{}
 
 	// interval between heartbeats.
@@ -140,6 +141,7 @@ func (h *heartbeater) start(wg *sync.WaitGroup) {
 }
 
 // beat extends lease for workers and writes server/worker info to redis.
+// Beat 延长了工作线程的租约，并将服务器工作线程信息写入 Redis。
 func (h *heartbeater) beat() {
 	h.state.mu.Lock()
 	srvStatus := h.state.value.String()

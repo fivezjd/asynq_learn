@@ -36,7 +36,7 @@ const (
 	AllServers    = "asynq:servers"    // ZSET
 	AllWorkers    = "asynq:workers"    // ZSET
 	AllSchedulers = "asynq:schedulers" // ZSET
-	AllQueues     = "asynq:queues"     // SET
+	AllQueues     = "asynq:queues"     // SET 全局集合
 	CancelChannel = "asynq:cancel"     // PubSub channel
 )
 
@@ -50,7 +50,7 @@ const (
 	TaskStateRetry
 	TaskStateArchived
 	TaskStateCompleted
-	TaskStateAggregating // describes a state where task is waiting in a group to be aggregated
+	TaskStateAggregating // describes a state where task is waiting in a group to be aggregated 描述任务在组中等待聚合的状态
 )
 
 func (s TaskState) String() string {
@@ -279,7 +279,7 @@ type TaskMessage struct {
 	// UniqueKey holds the redis key used for uniqueness lock for this task.
 	//
 	// Empty string indicates that no uniqueness lock was used.
-	UniqueKey string
+	UniqueKey string // 基于队列名称、任务类型、消息体生成的的md5唯一值
 
 	// GroupKey holds the group key used for task aggregation.
 	//
