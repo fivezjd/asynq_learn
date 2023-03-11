@@ -8,7 +8,7 @@ import "testing"
 
 func TestErrorDebugString(t *testing.T) {
 	// DebugString should include Op since its meant to be used by
-	// maintainers/contributors of the asynq package.
+	// maintainers/contributors of the asynq_learn package.
 	tests := []struct {
 		desc string
 		err  error

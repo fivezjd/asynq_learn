@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-package asynq
+package asynq_learn
 
 import (
 	"fmt"
@@ -50,7 +50,7 @@ type Scheduler struct {
 func NewScheduler(r RedisConnOpt, opts *SchedulerOpts) *Scheduler {
 	c, ok := r.MakeRedisClient().(redis.UniversalClient)
 	if !ok {
-		panic(fmt.Sprintf("asynq: unsupported RedisConnOpt type %T", r))
+		panic(fmt.Sprintf("asynq_learn: unsupported RedisConnOpt type %T", r))
 	}
 	if opts == nil {
 		opts = &SchedulerOpts{}
@@ -196,7 +196,7 @@ func (s *Scheduler) Unregister(entryID string) error {
 	defer s.mu.Unlock()
 	cronID, ok := s.idmap[entryID]
 	if !ok {
-		return fmt.Errorf("asynq: no scheduler entry found")
+		return fmt.Errorf("asynq_learn: no scheduler entry found")
 	}
 	delete(s.idmap, entryID)
 	s.cron.Remove(cronID)
@@ -235,9 +235,9 @@ func (s *Scheduler) start() error {
 	defer s.state.mu.Unlock()
 	switch s.state.value {
 	case srvStateActive:
-		return fmt.Errorf("asynq: the scheduler is already running")
+		return fmt.Errorf("asynq_learn: the scheduler is already running")
 	case srvStateClosed:
-		return fmt.Errorf("asynq: the scheduler has already been stopped")
+		return fmt.Errorf("asynq_learn: the scheduler has already been stopped")
 	}
 	s.state.value = srvStateActive
 	return nil

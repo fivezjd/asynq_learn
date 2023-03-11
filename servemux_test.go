@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-package asynq
+package asynq_learn
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func makeFakeHandler(identity string) Handler {
 }
 
 // makeFakeMiddleware returns a middleware function that appends the given identity
-//to the global invoked slice.
+// to the global invoked slice.
 func makeFakeMiddleware(identity string) MiddlewareFunc {
 	return func(next Handler) Handler {
 		return HandlerFunc(func(ctx context.Context, t *Task) error {

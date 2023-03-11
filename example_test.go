@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-package asynq_test
+package asynq_learn_test
 
 import (
 	"context"
@@ -17,12 +17,12 @@ import (
 )
 
 func ExampleServer_Run() {
-	srv := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: ":6379"},
-		asynq.Config{Concurrency: 20},
+	srv := asynq_learn.NewServer(
+		asynq_learn.RedisClientOpt{Addr: ":6379"},
+		asynq_learn.Config{Concurrency: 20},
 	)
 
-	h := asynq.NewServeMux()
+	h := asynq_learn.NewServeMux()
 	// ... Register handlers
 
 	// Run blocks and waits for os signal to terminate the program.
@@ -32,12 +32,12 @@ func ExampleServer_Run() {
 }
 
 func ExampleServer_Shutdown() {
-	srv := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: ":6379"},
-		asynq.Config{Concurrency: 20},
+	srv := asynq_learn.NewServer(
+		asynq_learn.RedisClientOpt{Addr: ":6379"},
+		asynq_learn.Config{Concurrency: 20},
 	)
 
-	h := asynq.NewServeMux()
+	h := asynq_learn.NewServeMux()
 	// ... Register handlers
 
 	if err := srv.Start(h); err != nil {
@@ -52,12 +52,12 @@ func ExampleServer_Shutdown() {
 }
 
 func ExampleServer_Stop() {
-	srv := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: ":6379"},
-		asynq.Config{Concurrency: 20},
+	srv := asynq_learn.NewServer(
+		asynq_learn.RedisClientOpt{Addr: ":6379"},
+		asynq_learn.Config{Concurrency: 20},
 	)
 
-	h := asynq.NewServeMux()
+	h := asynq_learn.NewServeMux()
 	// ... Register handlers
 
 	if err := srv.Start(h); err != nil {
@@ -81,15 +81,15 @@ func ExampleServer_Stop() {
 }
 
 func ExampleScheduler() {
-	scheduler := asynq.NewScheduler(
-		asynq.RedisClientOpt{Addr: ":6379"},
-		&asynq.SchedulerOpts{Location: time.Local},
+	scheduler := asynq_learn.NewScheduler(
+		asynq_learn.RedisClientOpt{Addr: ":6379"},
+		&asynq_learn.SchedulerOpts{Location: time.Local},
 	)
 
-	if _, err := scheduler.Register("* * * * *", asynq.NewTask("task1", nil)); err != nil {
+	if _, err := scheduler.Register("* * * * *", asynq_learn.NewTask("task1", nil)); err != nil {
 		log.Fatal(err)
 	}
-	if _, err := scheduler.Register("@every 30s", asynq.NewTask("task2", nil)); err != nil {
+	if _, err := scheduler.Register("@every 30s", asynq_learn.NewTask("task2", nil)); err != nil {
 		log.Fatal(err)
 	}
 
@@ -100,11 +100,11 @@ func ExampleScheduler() {
 }
 
 func ExampleParseRedisURI() {
-	rconn, err := asynq.ParseRedisURI("redis://localhost:6379/10")
+	rconn, err := asynq_learn.ParseRedisURI("redis://localhost:6379/10")
 	if err != nil {
 		log.Fatal(err)
 	}
-	r, ok := rconn.(asynq.RedisClientOpt)
+	r, ok := rconn.(asynq_learn.RedisClientOpt)
 	if !ok {
 		log.Fatal("unexpected type")
 	}
@@ -117,7 +117,7 @@ func ExampleParseRedisURI() {
 
 func ExampleResultWriter() {
 	// ResultWriter is only accessible in Handler.
-	h := func(ctx context.Context, task *asynq.Task) error {
+	h := func(ctx context.Context, task *asynq_learn.Task) error {
 		// .. do task processing work
 
 		res := []byte("task result data")

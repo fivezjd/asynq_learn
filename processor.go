@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-package asynq
+package asynq_learn
 
 import (
 	"context"
@@ -509,7 +509,7 @@ func gcd(xs ...int) int {
 // computeDeadline returns the given task's deadline,
 func (p *processor) computeDeadline(msg *base.TaskMessage) time.Time {
 	if msg.Timeout == 0 && msg.Deadline == 0 {
-		p.logger.Errorf("asynq: internal error: both timeout and deadline are not set for the task message: %s", msg.ID)
+		p.logger.Errorf("asynq_learn: internal error: both timeout and deadline are not set for the task message: %s", msg.ID)
 		return p.clock.Now().Add(defaultTimeout)
 	}
 	if msg.Timeout != 0 && msg.Deadline != 0 {

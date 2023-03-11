@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-// Package base defines foundational types and constants used in asynq package.
+// Package base defines foundational types and constants used in asynq_learn package.
 package base
 
 import (
@@ -22,7 +22,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// Version of asynq library and CLI.
+// Version of asynq_learn library and CLI.
 const Version = "0.24.0"
 
 // DefaultQueueName is the queue name used if none are specified by user.
@@ -33,11 +33,11 @@ var DefaultQueue = PendingKey(DefaultQueueName)
 
 // Global Redis keys.
 const (
-	AllServers    = "asynq:servers"    // ZSET
-	AllWorkers    = "asynq:workers"    // ZSET
-	AllSchedulers = "asynq:schedulers" // ZSET
-	AllQueues     = "asynq:queues"     // SET 全局集合
-	CancelChannel = "asynq:cancel"     // PubSub channel
+	AllServers    = "asynq_learn:servers"    // ZSET
+	AllWorkers    = "asynq_learn:workers"    // ZSET
+	AllSchedulers = "asynq_learn:schedulers" // ZSET
+	AllQueues     = "asynq_learn:queues"     // SET 全局集合
+	CancelChannel = "asynq_learn:cancel"     // PubSub channel
 )
 
 // TaskState denotes the state of a task.
@@ -104,7 +104,7 @@ func ValidateQueueName(qname string) error {
 
 // QueueKeyPrefix returns a prefix for all keys in the given queue.
 func QueueKeyPrefix(qname string) string {
-	return fmt.Sprintf("asynq:{%s}:", qname)
+	return fmt.Sprintf("asynq_learn:{%s}:", qname)
 }
 
 // TaskKeyPrefix returns a prefix for task key.
@@ -178,22 +178,22 @@ func FailedKey(qname string, t time.Time) string {
 
 // ServerInfoKey returns a redis key for process info.
 func ServerInfoKey(hostname string, pid int, serverID string) string {
-	return fmt.Sprintf("asynq:servers:{%s:%d:%s}", hostname, pid, serverID)
+	return fmt.Sprintf("asynq_learn:servers:{%s:%d:%s}", hostname, pid, serverID)
 }
 
 // WorkersKey returns a redis key for the workers given hostname, pid, and server ID.
 func WorkersKey(hostname string, pid int, serverID string) string {
-	return fmt.Sprintf("asynq:workers:{%s:%d:%s}", hostname, pid, serverID)
+	return fmt.Sprintf("asynq_learn:workers:{%s:%d:%s}", hostname, pid, serverID)
 }
 
 // SchedulerEntriesKey returns a redis key for the scheduler entries given scheduler ID.
 func SchedulerEntriesKey(schedulerID string) string {
-	return fmt.Sprintf("asynq:schedulers:{%s}", schedulerID)
+	return fmt.Sprintf("asynq_learn:schedulers:{%s}", schedulerID)
 }
 
 // SchedulerHistoryKey returns a redis key for the scheduler's history for the given entry.
 func SchedulerHistoryKey(entryID string) string {
-	return fmt.Sprintf("asynq:scheduler_history:%s", entryID)
+	return fmt.Sprintf("asynq_learn:scheduler_history:%s", entryID)
 }
 
 // UniqueKey returns a redis key with the given type, payload, and queue name.

@@ -35,9 +35,9 @@ var queueCmd = &cobra.Command{
 	Use:   "queue <command> [flags]",
 	Short: "Manage queues",
 	Example: heredoc.Doc(`
-	  $ asynq queue ls
-	  $ asynq queue inspect myqueue
-	  $ asynq queue pause myqueue`),
+	  $ asynq_learn queue ls
+	  $ asynq_learn queue inspect myqueue
+	  $ asynq_learn queue pause myqueue`),
 }
 
 var queueListCmd = &cobra.Command{
@@ -55,8 +55,8 @@ var queueInspectCmd = &cobra.Command{
 	// TODO: Use RunE instead?
 	Run: queueInspect,
 	Example: heredoc.Doc(`
-		$ asynq queue inspect myqueue
-		$ asynq queue inspect queue1 queue2 queue3`),
+		$ asynq_learn queue inspect myqueue
+		$ asynq_learn queue inspect queue1 queue2 queue3`),
 }
 
 var queueHistoryCmd = &cobra.Command{
@@ -65,9 +65,9 @@ var queueHistoryCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run:   queueHistory,
 	Example: heredoc.Doc(`
-		$ asynq queue history myqueue
-		$ asynq queue history queue1 queue2 queue3
-		$ asynq queue history myqueue --days=90`),
+		$ asynq_learn queue history myqueue
+		$ asynq_learn queue history queue1 queue2 queue3
+		$ asynq_learn queue history myqueue --days=90`),
 }
 
 var queuePauseCmd = &cobra.Command{
@@ -76,8 +76,8 @@ var queuePauseCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run:   queuePause,
 	Example: heredoc.Doc(`
-		$ asynq queue pause myqueue
-		$ asynq queue pause queue1 queue2 queue3`),
+		$ asynq_learn queue pause myqueue
+		$ asynq_learn queue pause queue1 queue2 queue3`),
 }
 
 var queueUnpauseCmd = &cobra.Command{
@@ -87,8 +87,8 @@ var queueUnpauseCmd = &cobra.Command{
 	Aliases: []string{"unpause"},
 	Run:     queueUnpause,
 	Example: heredoc.Doc(`
-		$ asynq queue resume myqueue
-		$ asynq queue resume queue1 queue2 queue3`),
+		$ asynq_learn queue resume myqueue
+		$ asynq_learn queue resume queue1 queue2 queue3`),
 }
 
 var queueRemoveCmd = &cobra.Command{
@@ -98,9 +98,9 @@ var queueRemoveCmd = &cobra.Command{
 	Args:    cobra.MinimumNArgs(1),
 	Run:     queueRemove,
 	Example: heredoc.Doc(`
-		$ asynq queue rm myqueue
-		$ asynq queue rm queue1 queue2 queue3
-		$ asynq queue rm myqueue --force`),
+		$ asynq_learn queue rm myqueue
+		$ asynq_learn queue rm queue1 queue2 queue3
+		$ asynq_learn queue rm myqueue --force`),
 }
 
 func queueList(cmd *cobra.Command, args []string) {
@@ -270,7 +270,7 @@ func queueRemove(cmd *cobra.Command, args []string) {
 		err = r.RemoveQueue(qname, force)
 		if err != nil {
 			if errors.IsQueueNotEmpty(err) {
-				fmt.Printf("error: %v\nIf you are sure you want to delete it, run 'asynq queue rm --force %s'\n", err, qname)
+				fmt.Printf("error: %v\nIf you are sure you want to delete it, run 'asynq_learn queue rm --force %s'\n", err, qname)
 				continue
 			}
 			fmt.Printf("error: %v\n", err)

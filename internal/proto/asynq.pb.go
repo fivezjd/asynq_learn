@@ -6,7 +6,7 @@
 // versions:
 // 	protoc-gen-go v1.25.0
 // 	protoc        v3.17.3
-// source: asynq.proto
+// source: asynq_learn.proto
 
 package proto
 
@@ -740,22 +740,22 @@ func file_asynq_proto_rawDescGZIP() []byte {
 
 var file_asynq_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_asynq_proto_goTypes = []interface{}{
-	(*TaskMessage)(nil),           // 0: asynq.TaskMessage
-	(*ServerInfo)(nil),            // 1: asynq.ServerInfo
-	(*WorkerInfo)(nil),            // 2: asynq.WorkerInfo
-	(*SchedulerEntry)(nil),        // 3: asynq.SchedulerEntry
-	(*SchedulerEnqueueEvent)(nil), // 4: asynq.SchedulerEnqueueEvent
-	nil,                           // 5: asynq.ServerInfo.QueuesEntry
+	(*TaskMessage)(nil),           // 0: asynq_learn.TaskMessage
+	(*ServerInfo)(nil),            // 1: asynq_learn.ServerInfo
+	(*WorkerInfo)(nil),            // 2: asynq_learn.WorkerInfo
+	(*SchedulerEntry)(nil),        // 3: asynq_learn.SchedulerEntry
+	(*SchedulerEnqueueEvent)(nil), // 4: asynq_learn.SchedulerEnqueueEvent
+	nil,                           // 5: asynq_learn.ServerInfo.QueuesEntry
 	(*timestamppb.Timestamp)(nil), // 6: google.protobuf.Timestamp
 }
 var file_asynq_proto_depIdxs = []int32{
-	5, // 0: asynq.ServerInfo.queues:type_name -> asynq.ServerInfo.QueuesEntry
-	6, // 1: asynq.ServerInfo.start_time:type_name -> google.protobuf.Timestamp
-	6, // 2: asynq.WorkerInfo.start_time:type_name -> google.protobuf.Timestamp
-	6, // 3: asynq.WorkerInfo.deadline:type_name -> google.protobuf.Timestamp
-	6, // 4: asynq.SchedulerEntry.next_enqueue_time:type_name -> google.protobuf.Timestamp
-	6, // 5: asynq.SchedulerEntry.prev_enqueue_time:type_name -> google.protobuf.Timestamp
-	6, // 6: asynq.SchedulerEnqueueEvent.enqueue_time:type_name -> google.protobuf.Timestamp
+	5, // 0: asynq_learn.ServerInfo.queues:type_name -> asynq_learn.ServerInfo.QueuesEntry
+	6, // 1: asynq_learn.ServerInfo.start_time:type_name -> google.protobuf.Timestamp
+	6, // 2: asynq_learn.WorkerInfo.start_time:type_name -> google.protobuf.Timestamp
+	6, // 3: asynq_learn.WorkerInfo.deadline:type_name -> google.protobuf.Timestamp
+	6, // 4: asynq_learn.SchedulerEntry.next_enqueue_time:type_name -> google.protobuf.Timestamp
+	6, // 5: asynq_learn.SchedulerEntry.prev_enqueue_time:type_name -> google.protobuf.Timestamp
+	6, // 6: asynq_learn.SchedulerEnqueueEvent.enqueue_time:type_name -> google.protobuf.Timestamp
 	7, // [7:7] is the sub-list for method output_type
 	7, // [7:7] is the sub-list for method input_type
 	7, // [7:7] is the sub-list for extension type_name

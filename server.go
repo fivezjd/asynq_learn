@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-package asynq
+package asynq_learn
 
 import (
 	"context"
@@ -152,16 +152,16 @@ type Config struct {
 	//
 	// Example:
 	//
-	//     func reportError(ctx context, task *asynq.Task, err error) {
-	//         retried, _ := asynq.GetRetryCount(ctx)
-	//         maxRetry, _ := asynq.GetMaxRetry(ctx)
+	//     func reportError(ctx context, task *asynq_learn.Task, err error) {
+	//         retried, _ := asynq_learn.GetRetryCount(ctx)
+	//         maxRetry, _ := asynq_learn.GetMaxRetry(ctx)
 	//     	   if retried >= maxRetry {
 	//             err = fmt.Errorf("retry exhausted for task %s: %w", task.Type, err)
 	//     	   }
 	//         errorReportingService.Notify(err)
 	//     })
 	//
-	//     ErrorHandler: asynq.ErrorHandlerFunc(reportError)
+	//     ErrorHandler: asynq_learn.ErrorHandlerFunc(reportError)
 	ErrorHandler ErrorHandler
 
 	// Logger specifies the logger used by the server instance.
@@ -328,7 +328,7 @@ func (l *LogLevel) String() string {
 	case FatalLevel:
 		return "fatal"
 	}
-	panic(fmt.Sprintf("asynq: unexpected log level: %v", *l))
+	panic(fmt.Sprintf("asynq_learn: unexpected log level: %v", *l))
 }
 
 // Set is part of the flag.Value interface.
@@ -345,7 +345,7 @@ func (l *LogLevel) Set(val string) error {
 	case "fatal":
 		*l = FatalLevel
 	default:
-		return fmt.Errorf("asynq: unsupported log level %q", val)
+		return fmt.Errorf("asynq_learn: unsupported log level %q", val)
 	}
 	return nil
 }
@@ -363,7 +363,7 @@ func toInternalLogLevel(l LogLevel) log.Level {
 	case FatalLevel:
 		return log.FatalLevel
 	}
-	panic(fmt.Sprintf("asynq: unexpected log level: %v", l))
+	panic(fmt.Sprintf("asynq_learn: unexpected log level: %v", l))
 }
 
 // DefaultRetryDelayFunc is the default RetryDelayFunc used if one is not specified in Config.
@@ -396,7 +396,7 @@ const (
 func NewServer(r RedisConnOpt, cfg Config) *Server {
 	c, ok := r.MakeRedisClient().(redis.UniversalClient)
 	if !ok {
-		panic(fmt.Sprintf("asynq: unsupported RedisConnOpt type %T", r))
+		panic(fmt.Sprintf("asynq_learn: unsupported RedisConnOpt type %T", r))
 	}
 	baseCtxFn := cfg.BaseContext
 	if baseCtxFn == nil {
@@ -580,7 +580,7 @@ func (fn HandlerFunc) ProcessTask(ctx context.Context, task *Task) error {
 }
 
 // ErrServerClosed indicates that the operation is now illegal because of the server has been shutdown.
-var ErrServerClosed = errors.New("asynq: Server closed")
+var ErrServerClosed = errors.New("asynq_learn: Server closed")
 
 // Run starts the task processing and blocks until
 // an os signal to exit the program is received. Once it receives
@@ -608,7 +608,7 @@ func (srv *Server) Run(handler Handler) error {
 // If the server has already been shutdown, ErrServerClosed is returned.
 func (srv *Server) Start(handler Handler) error {
 	if handler == nil {
-		return fmt.Errorf("asynq: server cannot run with nil handler")
+		return fmt.Errorf("asynq_learn: server cannot run with nil handler")
 	}
 	srv.processor.handler = handler
 
@@ -636,9 +636,9 @@ func (srv *Server) start() error {
 	defer srv.state.mu.Unlock()
 	switch srv.state.value {
 	case srvStateActive:
-		return fmt.Errorf("asynq: the server is already running")
+		return fmt.Errorf("asynq_learn: the server is already running")
 	case srvStateStopped:
-		return fmt.Errorf("asynq: the server is in the stopped state. Waiting for shutdown.")
+		return fmt.Errorf("asynq_learn: the server is in the stopped state. Waiting for shutdown.")
 	case srvStateClosed:
 		return ErrServerClosed
 	}

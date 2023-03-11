@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-package asynq
+package asynq_learn
 
 import (
 	"context"
@@ -31,7 +31,7 @@ type Client struct {
 func NewClient(r RedisConnOpt) *Client {
 	c, ok := r.MakeRedisClient().(redis.UniversalClient)
 	if !ok {
-		panic(fmt.Sprintf("asynq: unsupported RedisConnOpt type %T", r))
+		panic(fmt.Sprintf("asynq_learn: unsupported RedisConnOpt type %T", r))
 	}
 	return &Client{broker: rdb.NewRDB(c)}
 }

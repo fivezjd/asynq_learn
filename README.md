@@ -56,7 +56,7 @@ Make sure you have Go installed ([download](https://golang.org/dl/)). Version `1
 Initialize your project by creating a folder and then running `go mod init github.com/your/repo` ([learn more](https://blog.golang.org/using-go-modules)) inside the folder. Then install Asynq library with the [`go get`](https://golang.org/cmd/go/#hdr-Add_dependencies_to_current_module_and_install_them) command:
 
 ```sh
-go get -u github.com/hibiken/asynq
+go get -u github.com/hibiken/asynq_learn
 ```
 
 Make sure you're running a Redis server locally or from a [Docker](https://hub.docker.com/_/redis) container. Version `4.0` or higher is required.
@@ -114,10 +114,10 @@ func NewImageResizeTask(src string) (*asynq.Task, error) {
 
 //---------------------------------------------------------------
 // Write a function HandleXXXTask to handle the input task.
-// Note that it satisfies the asynq.HandlerFunc interface.
+// Note that it satisfies the asynq_learn.HandlerFunc interface.
 //
 // Handler doesn't need to be a function. You can define a type
-// that satisfies asynq.Handler interface. See examples below.
+// that satisfies asynq_learn.Handler interface. See examples below.
 //---------------------------------------------------------------
 
 func HandleEmailDeliveryTask(ctx context.Context, t *asynq.Task) error {
@@ -130,7 +130,7 @@ func HandleEmailDeliveryTask(ctx context.Context, t *asynq.Task) error {
     return nil
 }
 
-// ImageProcessor implements asynq.Handler interface.
+// ImageProcessor implements asynq_learn.Handler interface.
 type ImageProcessor struct {
     // ... fields for struct
 }
@@ -292,7 +292,7 @@ Asynq ships with a command line tool to inspect the state of queues and tasks.
 To install the CLI tool, run the following command:
 
 ```sh
-go install github.com/hibiken/asynq/tools/asynq
+go install github.com/hibiken/asynq_learn/tools/asynq_learn
 ```
 
 Here's an example of running the `asynq dash` command:

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-package asynq
+package asynq_learn
 
 import (
 	"context"
@@ -79,7 +79,7 @@ func (r *recoverer) start(wg *sync.WaitGroup) {
 
 // ErrLeaseExpired error indicates that the task failed because the worker working on the task
 // could not extend its lease due to missing heartbeats. The worker may have crashed or got cutoff from the network.
-var ErrLeaseExpired = errors.New("asynq: task lease expired")
+var ErrLeaseExpired = errors.New("asynq_learn: task lease expired")
 
 func (r *recoverer) recover() {
 	r.recoverLeaseExpiredTasks()

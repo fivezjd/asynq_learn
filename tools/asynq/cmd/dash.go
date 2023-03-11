@@ -30,8 +30,8 @@ var dashCmd = &cobra.Command{
 		Display interactive dashboard.`),
 	Args: cobra.NoArgs,
 	Example: heredoc.Doc(`
-        $ asynq dash
-        $ asynq dash --refresh=3s`),
+        $ asynq_learn dash
+        $ asynq_learn dash --refresh=3s`),
 	Run: func(cmd *cobra.Command, args []string) {
 		if flagPollInterval < 1*time.Second {
 			fmt.Println("error: --refresh cannot be less than 1s")

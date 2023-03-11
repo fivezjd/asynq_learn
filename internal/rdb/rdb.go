@@ -85,8 +85,8 @@ func (r *RDB) runScriptWithErrorCode(ctx context.Context, op errors.Op, script *
 // enqueueCmd enqueues a given task message.
 //
 // Input:
-// KEYS[1] -> asynq:{<qname>}:t:<task_id>
-// KEYS[2] -> asynq:{<qname>}:pending
+// KEYS[1] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[2] -> asynq_learn:{<qname>}:pending
 // --
 // ARGV[1] -> task message data
 // ARGV[2] -> task ID
@@ -121,7 +121,7 @@ func (r *RDB) Enqueue(ctx context.Context, msg *base.TaskMessage) error {
 	}
 	keys := []string{
 		base.TaskKey(msg.Queue, msg.ID), // 哈希 msg => 值是编码后的消息
-		base.PendingKey(msg.Queue),      // 列表 "asynq:{default}:pending  队列中的值是任务ID
+		base.PendingKey(msg.Queue),      // 列表 "asynq_learn:{default}:pending  队列中的值是任务ID
 	}
 	log.Println(keys)
 	argv := []interface{}{
@@ -142,8 +142,8 @@ func (r *RDB) Enqueue(ctx context.Context, msg *base.TaskMessage) error {
 // enqueueUniqueCmd enqueues the task message if the task is unique.
 //
 // KEYS[1] -> unique key
-// KEYS[2] -> asynq:{<qname>}:t:<taskid>
-// KEYS[3] -> asynq:{<qname>}:pending
+// KEYS[2] -> asynq_learn:{<qname>}:t:<taskid>
+// KEYS[3] -> asynq_learn:{<qname>}:pending
 // --
 // ARGV[1] -> task ID
 // ARGV[2] -> uniqueness lock TTL
@@ -208,10 +208,10 @@ func (r *RDB) EnqueueUnique(ctx context.Context, msg *base.TaskMessage, ttl time
 }
 
 // Input:
-// KEYS[1] -> asynq:{<qname>}:pending
-// KEYS[2] -> asynq:{<qname>}:paused
-// KEYS[3] -> asynq:{<qname>}:active
-// KEYS[4] -> asynq:{<qname>}:lease
+// KEYS[1] -> asynq_learn:{<qname>}:pending
+// KEYS[2] -> asynq_learn:{<qname>}:paused
+// KEYS[3] -> asynq_learn:{<qname>}:active
+// KEYS[4] -> asynq_learn:{<qname>}:lease
 // --
 // ARGV[1] -> initial lease expiration Unix time
 // ARGV[2] -> task key prefix
@@ -271,11 +271,11 @@ func (r *RDB) Dequeue(qnames ...string) (msg *base.TaskMessage, leaseExpirationT
 	return nil, time.Time{}, errors.E(op, errors.NotFound, errors.ErrNoProcessableTask)
 }
 
-// KEYS[1] -> asynq:{<qname>}:active
-// KEYS[2] -> asynq:{<qname>}:lease
-// KEYS[3] -> asynq:{<qname>}:t:<task_id>
-// KEYS[4] -> asynq:{<qname>}:processed:<yyyy-mm-dd>
-// KEYS[5] -> asynq:{<qname>}:processed
+// KEYS[1] -> asynq_learn:{<qname>}:active
+// KEYS[2] -> asynq_learn:{<qname>}:lease
+// KEYS[3] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[4] -> asynq_learn:{<qname>}:processed:<yyyy-mm-dd>
+// KEYS[5] -> asynq_learn:{<qname>}:processed
 // -------
 // ARGV[1] -> task ID
 // ARGV[2] -> stats expiration timestamp
@@ -303,11 +303,11 @@ end
 return redis.status_reply("OK")
 `)
 
-// KEYS[1] -> asynq:{<qname>}:active
-// KEYS[2] -> asynq:{<qname>}:lease
-// KEYS[3] -> asynq:{<qname>}:t:<task_id>
-// KEYS[4] -> asynq:{<qname>}:processed:<yyyy-mm-dd>
-// KEYS[5] -> asynq:{<qname>}:processed
+// KEYS[1] -> asynq_learn:{<qname>}:active
+// KEYS[2] -> asynq_learn:{<qname>}:lease
+// KEYS[3] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[4] -> asynq_learn:{<qname>}:processed:<yyyy-mm-dd>
+// KEYS[5] -> asynq_learn:{<qname>}:processed
 // KEYS[6] -> unique key
 // -------
 // ARGV[1] -> task ID
@@ -365,12 +365,12 @@ func (r *RDB) Done(ctx context.Context, msg *base.TaskMessage) error {
 	return r.runScript(ctx, op, doneCmd, keys, argv...)
 }
 
-// KEYS[1] -> asynq:{<qname>}:active
-// KEYS[2] -> asynq:{<qname>}:lease
-// KEYS[3] -> asynq:{<qname>}:completed
-// KEYS[4] -> asynq:{<qname>}:t:<task_id>
-// KEYS[5] -> asynq:{<qname>}:processed:<yyyy-mm-dd>
-// KEYS[6] -> asynq:{<qname>}:processed
+// KEYS[1] -> asynq_learn:{<qname>}:active
+// KEYS[2] -> asynq_learn:{<qname>}:lease
+// KEYS[3] -> asynq_learn:{<qname>}:completed
+// KEYS[4] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[5] -> asynq_learn:{<qname>}:processed:<yyyy-mm-dd>
+// KEYS[6] -> asynq_learn:{<qname>}:processed
 //
 // ARGV[1] -> task ID
 // ARGV[2] -> stats expiration timestamp
@@ -401,13 +401,13 @@ end
 return redis.status_reply("OK")
 `)
 
-// KEYS[1] -> asynq:{<qname>}:active
-// KEYS[2] -> asynq:{<qname>}:lease
-// KEYS[3] -> asynq:{<qname>}:completed
-// KEYS[4] -> asynq:{<qname>}:t:<task_id>
-// KEYS[5] -> asynq:{<qname>}:processed:<yyyy-mm-dd>
-// KEYS[6] -> asynq:{<qname>}:processed
-// KEYS[7] -> asynq:{<qname>}:unique:{<checksum>}
+// KEYS[1] -> asynq_learn:{<qname>}:active
+// KEYS[2] -> asynq_learn:{<qname>}:lease
+// KEYS[3] -> asynq_learn:{<qname>}:completed
+// KEYS[4] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[5] -> asynq_learn:{<qname>}:processed:<yyyy-mm-dd>
+// KEYS[6] -> asynq_learn:{<qname>}:processed
+// KEYS[7] -> asynq_learn:{<qname>}:unique:{<checksum>}
 //
 // ARGV[1] -> task ID
 // ARGV[2] -> stats expiration timestamp
@@ -475,10 +475,10 @@ func (r *RDB) MarkAsComplete(ctx context.Context, msg *base.TaskMessage) error {
 	return r.runScript(ctx, op, markAsCompleteCmd, keys, argv...)
 }
 
-// KEYS[1] -> asynq:{<qname>}:active
-// KEYS[2] -> asynq:{<qname>}:lease
-// KEYS[3] -> asynq:{<qname>}:pending
-// KEYS[4] -> asynq:{<qname>}:t:<task_id>
+// KEYS[1] -> asynq_learn:{<qname>}:active
+// KEYS[2] -> asynq_learn:{<qname>}:lease
+// KEYS[3] -> asynq_learn:{<qname>}:pending
+// KEYS[4] -> asynq_learn:{<qname>}:t:<task_id>
 // ARGV[1] -> task ID
 // Note: Use RPUSH to push to the head of the queue.
 var requeueCmd = redis.NewScript(`
@@ -504,9 +504,9 @@ func (r *RDB) Requeue(ctx context.Context, msg *base.TaskMessage) error {
 	return r.runScript(ctx, op, requeueCmd, keys, msg.ID)
 }
 
-// KEYS[1] -> asynq:{<qname>}:t:<task_id>
-// KEYS[2] -> asynq:{<qname>}:g:<group_key>
-// KEYS[3] -> asynq:{<qname>}:groups
+// KEYS[1] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[2] -> asynq_learn:{<qname>}:g:<group_key>
+// KEYS[3] -> asynq_learn:{<qname>}:groups
 // -------
 // ARGV[1] -> task message data
 // ARGV[2] -> task ID
@@ -544,9 +544,9 @@ func (r *RDB) AddToGroup(ctx context.Context, msg *base.TaskMessage, groupKey st
 		base.AllGroups(msg.Queue),
 	}
 	log.Println("AddToGroup------start")
-	log.Printf("HSET 的键名称 KEYS[1]:%s asynq:{<qname>}:t:<task_id>", keys[0])
-	log.Printf("ZADD 的键名称 KEYS[2]:%s asynq:{<qname>}:g:<group_key>", keys[1])
-	log.Printf("SADD 的键名称 KEYS[3]:%s asynq:{<qname>}:groups", keys[2])
+	log.Printf("HSET 的键名称 KEYS[1]:%s asynq_learn:{<qname>}:t:<task_id>", keys[0])
+	log.Printf("ZADD 的键名称 KEYS[2]:%s asynq_learn:{<qname>}:g:<group_key>", keys[1])
+	log.Printf("SADD 的键名称 KEYS[3]:%s asynq_learn:{<qname>}:groups", keys[2])
 
 	argv := []interface{}{
 		encoded,
@@ -570,9 +570,9 @@ func (r *RDB) AddToGroup(ctx context.Context, msg *base.TaskMessage, groupKey st
 	return nil
 }
 
-// KEYS[1] -> asynq:{<qname>}:t:<task_id>
-// KEYS[2] -> asynq:{<qname>}:g:<group_key>
-// KEYS[3] -> asynq:{<qname>}:groups
+// KEYS[1] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[2] -> asynq_learn:{<qname>}:g:<group_key>
+// KEYS[3] -> asynq_learn:{<qname>}:groups
 // KEYS[4] -> unique key
 // -------
 // ARGV[1] -> task message data
@@ -637,8 +637,8 @@ func (r *RDB) AddToGroupUnique(ctx context.Context, msg *base.TaskMessage, group
 	return nil
 }
 
-// KEYS[1] -> asynq:{<qname>}:t:<task_id>
-// KEYS[2] -> asynq:{<qname>}:scheduled
+// KEYS[1] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[2] -> asynq_learn:{<qname>}:scheduled
 // -------
 // ARGV[1] -> task message data
 // ARGV[2] -> process_at time in Unix time
@@ -688,8 +688,8 @@ func (r *RDB) Schedule(ctx context.Context, msg *base.TaskMessage, processAt tim
 }
 
 // KEYS[1] -> unique key
-// KEYS[2] -> asynq:{<qname>}:t:<task_id>
-// KEYS[3] -> asynq:{<qname>}:scheduled
+// KEYS[2] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[3] -> asynq_learn:{<qname>}:scheduled
 // -------
 // ARGV[1] -> task ID
 // ARGV[2] -> uniqueness lock TTL
@@ -751,14 +751,14 @@ func (r *RDB) ScheduleUnique(ctx context.Context, msg *base.TaskMessage, process
 	return nil
 }
 
-// KEYS[1] -> asynq:{<qname>}:t:<task_id>
-// KEYS[2] -> asynq:{<qname>}:active
-// KEYS[3] -> asynq:{<qname>}:lease
-// KEYS[4] -> asynq:{<qname>}:retry
-// KEYS[5] -> asynq:{<qname>}:processed:<yyyy-mm-dd>
-// KEYS[6] -> asynq:{<qname>}:failed:<yyyy-mm-dd>
-// KEYS[7] -> asynq:{<qname>}:processed
-// KEYS[8] -> asynq:{<qname>}:failed
+// KEYS[1] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[2] -> asynq_learn:{<qname>}:active
+// KEYS[3] -> asynq_learn:{<qname>}:lease
+// KEYS[4] -> asynq_learn:{<qname>}:retry
+// KEYS[5] -> asynq_learn:{<qname>}:processed:<yyyy-mm-dd>
+// KEYS[6] -> asynq_learn:{<qname>}:failed:<yyyy-mm-dd>
+// KEYS[7] -> asynq_learn:{<qname>}:processed
+// KEYS[8] -> asynq_learn:{<qname>}:failed
 // -------
 // ARGV[1] -> task ID
 // ARGV[2] -> updated base.TaskMessage value
@@ -838,14 +838,14 @@ const (
 	archivedExpirationInDays = 90    // number of days before an archived task gets deleted permanently
 )
 
-// KEYS[1] -> asynq:{<qname>}:t:<task_id>
-// KEYS[2] -> asynq:{<qname>}:active
-// KEYS[3] -> asynq:{<qname>}:lease
-// KEYS[4] -> asynq:{<qname>}:archived
-// KEYS[5] -> asynq:{<qname>}:processed:<yyyy-mm-dd>
-// KEYS[6] -> asynq:{<qname>}:failed:<yyyy-mm-dd>
-// KEYS[7] -> asynq:{<qname>}:processed
-// KEYS[8] -> asynq:{<qname>}:failed
+// KEYS[1] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[2] -> asynq_learn:{<qname>}:active
+// KEYS[3] -> asynq_learn:{<qname>}:lease
+// KEYS[4] -> asynq_learn:{<qname>}:archived
+// KEYS[5] -> asynq_learn:{<qname>}:processed:<yyyy-mm-dd>
+// KEYS[6] -> asynq_learn:{<qname>}:failed:<yyyy-mm-dd>
+// KEYS[7] -> asynq_learn:{<qname>}:processed
+// KEYS[8] -> asynq_learn:{<qname>}:failed
 // -------
 // ARGV[1] -> task ID
 // ARGV[2] -> updated base.TaskMessage value
@@ -931,8 +931,8 @@ func (r *RDB) ForwardIfReady(qnames ...string) error {
 	return nil
 }
 
-// KEYS[1] -> source queue (e.g. asynq:{<qname>:scheduled or asynq:{<qname>}:retry})
-// KEYS[2] -> asynq:{<qname>}:pending
+// KEYS[1] -> source queue (e.g. asynq_learn:{<qname>:scheduled or asynq_learn:{<qname>}:retry})
+// KEYS[2] -> asynq_learn:{<qname>}:pending
 // ARGV[1] -> current unix time in seconds
 // ARGV[2] -> task key prefix
 // ARGV[3] -> current unix time in nsec
@@ -1019,10 +1019,10 @@ func (r *RDB) ListGroups(qname string) ([]string, error) {
 // and put them in an aggregation set. Additionally, if the creation of aggregation set
 // empties the group, it will clear the group name from the all groups set.
 //
-// KEYS[1] -> asynq:{<qname>}:g:<gname>  所有未处理的成员
-// KEYS[2] -> asynq:{<qname>}:g:<gname>:<aggregation_set_id>  已经处理的成员
-// KEYS[3] -> asynq:{<qname>}:aggregation_sets
-// KEYS[4] -> asynq:{<qname>}:groups  存放所有组的名称在一个无序的集合中
+// KEYS[1] -> asynq_learn:{<qname>}:g:<gname>  所有未处理的成员
+// KEYS[2] -> asynq_learn:{<qname>}:g:<gname>:<aggregation_set_id>  已经处理的成员
+// KEYS[3] -> asynq_learn:{<qname>}:aggregation_sets
+// KEYS[4] -> asynq_learn:{<qname>}:groups  存放所有组的名称在一个无序的集合中
 // -------
 // ARGV[1] -> max group size
 // ARGV[2] -> max group delay in unix time
@@ -1136,7 +1136,7 @@ func (r *RDB) AggregationCheck(qname, gname string, t time.Time, gracePeriod, ma
 	}
 }
 
-// KEYS[1] -> asynq:{<qname>}:g:<gname>:<aggregation_set_id>
+// KEYS[1] -> asynq_learn:{<qname>}:g:<gname>:<aggregation_set_id>
 // ------
 // ARGV[1] -> task key prefix
 //
@@ -1185,8 +1185,8 @@ func (r *RDB) ReadAggregationSet(qname, gname, setID string) ([]*base.TaskMessag
 	return msgs, time.Unix(int64(deadlineUnix), 0), nil
 }
 
-// KEYS[1] -> asynq:{<qname>}:g:<gname>:<aggregation_set_id>
-// KEYS[2] -> asynq:{<qname>}:aggregation_sets
+// KEYS[1] -> asynq_learn:{<qname>}:g:<gname>:<aggregation_set_id>
+// KEYS[2] -> asynq_learn:{<qname>}:aggregation_sets
 // -------
 // ARGV[1] -> task key prefix
 //
@@ -1216,7 +1216,7 @@ func (r *RDB) DeleteAggregationSet(ctx context.Context, qname, gname, setID stri
 	return r.runScript(ctx, op, deleteAggregationSetCmd, keys, base.TaskKeyPrefix(qname))
 }
 
-// KEYS[1] -> asynq:{<qname>}:aggregation_sets
+// KEYS[1] -> asynq_learn:{<qname>}:aggregation_sets
 // -------
 // ARGV[1] -> current time in unix time
 var reclaimStateAggregationSetsCmd = redis.NewScript(`
@@ -1242,7 +1242,7 @@ func (r *RDB) ReclaimStaleAggregationSets(qname string) error {
 		[]string{base.AllAggregationSets(qname)}, r.clock.Now().Unix())
 }
 
-// KEYS[1] -> asynq:{<qname>}:completed
+// KEYS[1] -> asynq_learn:{<qname>}:completed
 // ARGV[1] -> current time in unix time
 // ARGV[2] -> task key prefix
 // ARGV[3] -> batch size (i.e. maximum number of tasks to delete)
@@ -1293,7 +1293,7 @@ func (r *RDB) deleteExpiredCompletedTasks(qname string, batchSize int) (int64, e
 	return n, nil
 }
 
-// KEYS[1] -> asynq:{<qname>}:lease
+// KEYS[1] -> asynq_learn:{<qname>}:lease
 // ARGV[1] -> cutoff in unix time
 // ARGV[2] -> task key prefix
 var listLeaseExpiredCmd = redis.NewScript(`
@@ -1349,8 +1349,8 @@ func (r *RDB) ExtendLease(qname string, ids ...string) (expirationTime time.Time
 	return expireAt, nil
 }
 
-// KEYS[1]  -> asynq:servers:{<host:pid:sid>}
-// KEYS[2]  -> asynq:workers:{<host:pid:sid>}
+// KEYS[1]  -> asynq_learn:servers:{<host:pid:sid>}
+// KEYS[2]  -> asynq_learn:workers:{<host:pid:sid>}
 // ARGV[1]  -> TTL in seconds
 // ARGV[2]  -> server info
 // ARGV[3:] -> alternate key-value pair of (worker id, worker data)
@@ -1393,8 +1393,8 @@ func (r *RDB) WriteServerState(info *base.ServerInfo, workers []*base.WorkerInfo
 	return r.runScript(ctx, op, writeServerStateCmd, []string{skey, wkey}, args...)
 }
 
-// KEYS[1] -> asynq:servers:{<host:pid:sid>}
-// KEYS[2] -> asynq:workers:{<host:pid:sid>}
+// KEYS[1] -> asynq_learn:servers:{<host:pid:sid>}
+// KEYS[2] -> asynq_learn:workers:{<host:pid:sid>}
 var clearServerStateCmd = redis.NewScript(`
 redis.call("DEL", KEYS[1])
 redis.call("DEL", KEYS[2])
@@ -1415,7 +1415,7 @@ func (r *RDB) ClearServerState(host string, pid int, serverID string) error {
 	return r.runScript(ctx, op, clearServerStateCmd, []string{skey, wkey})
 }
 
-// KEYS[1]  -> asynq:schedulers:{<schedulerID>}
+// KEYS[1]  -> asynq_learn:schedulers:{<schedulerID>}
 // ARGV[1]  -> TTL in seconds
 // ARGV[2:] -> schedler entries
 var writeSchedulerEntriesCmd = redis.NewScript(`
@@ -1484,7 +1484,7 @@ func (r *RDB) PublishCancelation(id string) error {
 	return nil
 }
 
-// KEYS[1] -> asynq:scheduler_history:<entryID>
+// KEYS[1] -> asynq_learn:scheduler_history:<entryID>
 // ARGV[1] -> enqueued_at timestamp
 // ARGV[2] -> serialized SchedulerEnqueueEvent data
 // ARGV[3] -> max number of events to be persisted

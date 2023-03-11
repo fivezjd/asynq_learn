@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-// Package testutil defines test helpers for asynq and its internal packages.
+// Package testutil defines test helpers for asynq_learn and its internal packages.
 package testutil
 
 import (

@@ -43,7 +43,7 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:     "asynq <command> <subcommand> [flags]",
+	Use:     "asynq_learn <command> <subcommand> [flags]",
 	Short:   "Asynq CLI",
 	Long:    `Command line tool to inspect tasks and queues managed by Asynq`,
 	Version: base.Version,
@@ -52,16 +52,16 @@ var rootCmd = &cobra.Command{
 	SilenceErrors: true,
 
 	Example: heredoc.Doc(`
-		$ asynq stats
-		$ asynq queue pause myqueue
-		$ asynq task list --queue=myqueue --state=archived`),
+		$ asynq_learn stats
+		$ asynq_learn queue pause myqueue
+		$ asynq_learn task list --queue=myqueue --state=archived`),
 	Annotations: map[string]string{
 		"help:feedback": heredoc.Doc(`
 			Open an issue at https://github.com/hibiken/asynq/issues/new/choose`),
 	},
 }
 
-var versionOutput = fmt.Sprintf("asynq version %s\n", base.Version)
+var versionOutput = fmt.Sprintf("asynq_learn version %s\n", base.Version)
 
 var versionCmd = &cobra.Command{
 	Use:    "version",
@@ -119,7 +119,7 @@ func capitalize(s string) string {
 }
 
 func rootHelpFunc(cmd *cobra.Command, args []string) {
-	// Display helpful error message when user mistypes a subcommand (e.g. 'asynq queue lst').
+	// Display helpful error message when user mistypes a subcommand (e.g. 'asynq_learn queue lst').
 	if isRootCmd(cmd.Parent()) && len(args) >= 2 && args[1] != "--help" && args[1] != "-h" {
 		printSubcommandSuggestions(cmd, args[1])
 		return
@@ -175,7 +175,7 @@ func rootHelpFunc(cmd *cobra.Command, args []string) {
 		helpEntries = append(helpEntries, &helpEntry{"EXAMPLES", cmd.Example})
 	}
 	helpEntries = append(helpEntries, &helpEntry{"LEARN MORE", heredoc.Doc(`
-		Use 'asynq <command> <subcommand> --help' for more information about a command.`)})
+		Use 'asynq_learn <command> <subcommand> --help' for more information about a command.`)})
 	if s, ok := cmd.Annotations["help:feedback"]; ok {
 		helpEntries = append(helpEntries, &helpEntry{"FEEDBACK", s})
 	}
@@ -303,7 +303,7 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.SetVersionTemplate(versionOutput)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Config file to set flag defaut values (default is $HOME/.asynq.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Config file to set flag defaut values (default is $HOME/.asynq_learn.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&uri, "uri", "u", "127.0.0.1:6379", "Redis server URI")
 	rootCmd.PersistentFlags().IntVarP(&db, "db", "n", 0, "Redis database number (default is 0)")
 	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "Password to use when connecting to redis server")
@@ -335,9 +335,9 @@ func initConfig() {
 			os.Exit(1)
 		}
 
-		// Search config in home directory with name ".asynq" (without extension).
+		// Search config in home directory with name ".asynq_learn" (without extension).
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".asynq")
+		viper.SetConfigName(".asynq_learn")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
@@ -404,18 +404,22 @@ func getTLSConfig() *tls.Config {
 // cols is a list of headers and printRow specifies how to print rows.
 //
 // Example:
-// type User struct {
-//     Name string
-//     Addr string
-//     Age  int
-// }
+//
+//	type User struct {
+//	    Name string
+//	    Addr string
+//	    Age  int
+//	}
+//
 // data := []*User{{"user1", "addr1", 24}, {"user2", "addr2", 42}, ...}
 // cols := []string{"Name", "Addr", "Age"}
-// printRows := func(w io.Writer, tmpl string) {
-//     for _, u := range data {
-//         fmt.Fprintf(w, tmpl, u.Name, u.Addr, u.Age)
-//     }
-// }
+//
+//	printRows := func(w io.Writer, tmpl string) {
+//	    for _, u := range data {
+//	        fmt.Fprintf(w, tmpl, u.Name, u.Addr, u.Age)
+//	    }
+//	}
+//
 // printTable(cols, printRows)
 func printTable(cols []string, printRows func(w io.Writer, tmpl string)) {
 	format := strings.Repeat("%v\t", len(cols)) + "\n"

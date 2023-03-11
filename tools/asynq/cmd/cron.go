@@ -28,8 +28,8 @@ var cronCmd = &cobra.Command{
 	Use:   "cron <command> [flags]",
 	Short: "Manage cron",
 	Example: heredoc.Doc(`
-		$ asynq cron ls
-		$ asynq cron history 7837f142-6337-4217-9276-8f27281b67d1`),
+		$ asynq_learn cron ls
+		$ asynq_learn cron history 7837f142-6337-4217-9276-8f27281b67d1`),
 }
 
 var cronListCmd = &cobra.Command{
@@ -45,10 +45,10 @@ var cronHistoryCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run:   cronHistory,
 	Example: heredoc.Doc(`
-		$ asynq cron history 7837f142-6337-4217-9276-8f27281b67d1
-		$ asynq cron history 7837f142-6337-4217-9276-8f27281b67d1 bf6a8594-cd03-4968-b36a-8572c5e160dd
-		$ asynq cron history 7837f142-6337-4217-9276-8f27281b67d1 --size=100
-		$ asynq cron history 7837f142-6337-4217-9276-8f27281b67d1 --page=2`),
+		$ asynq_learn cron history 7837f142-6337-4217-9276-8f27281b67d1
+		$ asynq_learn cron history 7837f142-6337-4217-9276-8f27281b67d1 bf6a8594-cd03-4968-b36a-8572c5e160dd
+		$ asynq_learn cron history 7837f142-6337-4217-9276-8f27281b67d1 --size=100
+		$ asynq_learn cron history 7837f142-6337-4217-9276-8f27281b67d1 --page=2`),
 }
 
 func cronList(cmd *cobra.Command, args []string) {

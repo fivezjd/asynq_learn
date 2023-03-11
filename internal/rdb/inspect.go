@@ -77,18 +77,18 @@ type DailyStats struct {
 	Time time.Time
 }
 
-// KEYS[1] ->  asynq:<qname>:pending
-// KEYS[2] ->  asynq:<qname>:active
-// KEYS[3] ->  asynq:<qname>:scheduled
-// KEYS[4] ->  asynq:<qname>:retry
-// KEYS[5] ->  asynq:<qname>:archived
-// KEYS[6] ->  asynq:<qname>:completed
-// KEYS[7] ->  asynq:<qname>:processed:<yyyy-mm-dd>
-// KEYS[8] ->  asynq:<qname>:failed:<yyyy-mm-dd>
-// KEYS[9] ->  asynq:<qname>:processed
-// KEYS[10] -> asynq:<qname>:failed
-// KEYS[11] -> asynq:<qname>:paused
-// KEYS[12] -> asynq:<qname>:groups
+// KEYS[1] ->  asynq_learn:<qname>:pending
+// KEYS[2] ->  asynq_learn:<qname>:active
+// KEYS[3] ->  asynq_learn:<qname>:scheduled
+// KEYS[4] ->  asynq_learn:<qname>:retry
+// KEYS[5] ->  asynq_learn:<qname>:archived
+// KEYS[6] ->  asynq_learn:<qname>:completed
+// KEYS[7] ->  asynq_learn:<qname>:processed:<yyyy-mm-dd>
+// KEYS[8] ->  asynq_learn:<qname>:failed:<yyyy-mm-dd>
+// KEYS[9] ->  asynq_learn:<qname>:processed
+// KEYS[10] -> asynq_learn:<qname>:failed
+// KEYS[11] -> asynq_learn:<qname>:paused
+// KEYS[12] -> asynq_learn:<qname>:groups
 // --------
 // ARGV[1] -> task key prefix
 // ARGV[2] -> group key prefix
@@ -240,18 +240,18 @@ func (r *RDB) CurrentStats(qname string) (*Stats, error) {
 // from each redis list/zset. Returns approximate memory usage value
 // in bytes.
 //
-// KEYS[1] -> asynq:{qname}:active
-// KEYS[2] -> asynq:{qname}:pending
-// KEYS[3] -> asynq:{qname}:scheduled
-// KEYS[4] -> asynq:{qname}:retry
-// KEYS[5] -> asynq:{qname}:archived
-// KEYS[6] -> asynq:{qname}:completed
-// KEYS[7] -> asynq:{qname}:groups
+// KEYS[1] -> asynq_learn:{qname}:active
+// KEYS[2] -> asynq_learn:{qname}:pending
+// KEYS[3] -> asynq_learn:{qname}:scheduled
+// KEYS[4] -> asynq_learn:{qname}:retry
+// KEYS[5] -> asynq_learn:{qname}:archived
+// KEYS[6] -> asynq_learn:{qname}:completed
+// KEYS[7] -> asynq_learn:{qname}:groups
 // -------
-// ARGV[1] -> asynq:{qname}:t: (task key prefix)
+// ARGV[1] -> asynq_learn:{qname}:t: (task key prefix)
 // ARGV[2] -> task sample size per redis list/zset (e.g 20)
 // ARGV[3] -> group sample size
-// ARGV[4] -> asynq:{qname}:g: (group key prefix)
+// ARGV[4] -> asynq_learn:{qname}:g: (group key prefix)
 var memoryUsageCmd = redis.NewScript(`
 local sample_size = tonumber(ARGV[2])
 if sample_size <= 0 then
@@ -454,10 +454,10 @@ func (r *RDB) checkQueueExists(qname string) error {
 }
 
 // Input:
-// KEYS[1] -> task key (asynq:{<qname>}:t:<taskid>)
+// KEYS[1] -> task key (asynq_learn:{<qname>}:t:<taskid>)
 // ARGV[1] -> task id
 // ARGV[2] -> current time in Unix time (seconds)
-// ARGV[3] -> queue key prefix (asynq:{<qname>}:)
+// ARGV[3] -> queue key prefix (asynq_learn:{<qname>}:)
 //
 // Output:
 // Tuple of {msg, state, nextProcessAt, result}
@@ -555,7 +555,7 @@ type GroupStat struct {
 	Size int
 }
 
-// KEYS[1] -> asynq:{<qname>}:groups
+// KEYS[1] -> asynq_learn:{<qname>}:groups
 // -------
 // ARGV[1] -> group key prefix
 //
@@ -649,7 +649,7 @@ func (r *RDB) ListActive(qname string, pgn Pagination) ([]*base.TaskInfo, error)
 	return res, nil
 }
 
-// KEYS[1] -> key for id list (e.g. asynq:{<qname>}:pending)
+// KEYS[1] -> key for id list (e.g. asynq_learn:{<qname>}:pending)
 // ARGV[1] -> start offset
 // ARGV[2] -> stop offset
 // ARGV[3] -> task key prefix
@@ -807,7 +807,7 @@ func (r *RDB) queueExists(qname string) (bool, error) {
 	return r.client.SIsMember(context.Background(), base.AllQueues, qname).Result()
 }
 
-// KEYS[1] -> key for ids set (e.g. asynq:{<qname>}:scheduled)
+// KEYS[1] -> key for ids set (e.g. asynq_learn:{<qname>}:scheduled)
 // ARGV[1] -> min
 // ARGV[2] -> max
 // ARGV[3] -> task key prefix
@@ -925,9 +925,9 @@ func (r *RDB) RunAllArchivedTasks(qname string) (int64, error) {
 // runAllAggregatingCmd schedules all tasks in the group to run individually.
 //
 // Input:
-// KEYS[1] -> asynq:{<qname>}:g:<gname>
-// KEYS[2] -> asynq:{<qname>}:pending
-// KEYS[3] -> asynq:{<qname>}:groups
+// KEYS[1] -> asynq_learn:{<qname>}:g:<gname>
+// KEYS[2] -> asynq_learn:{<qname>}:pending
+// KEYS[3] -> asynq_learn:{<qname>}:groups
 // -------
 // ARGV[1] -> task key prefix
 // ARGV[2] -> group name
@@ -976,12 +976,12 @@ func (r *RDB) RunAllAggregatingTasks(qname, gname string) (int64, error) {
 // runTaskCmd is a Lua script that updates the given task to pending state.
 //
 // Input:
-// KEYS[1] -> asynq:{<qname>}:t:<task_id>
-// KEYS[2] -> asynq:{<qname>}:pending
-// KEYS[3] -> asynq:{<qname>}:groups
+// KEYS[1] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[2] -> asynq_learn:{<qname>}:pending
+// KEYS[3] -> asynq_learn:{<qname>}:groups
 // --
 // ARGV[1] -> task ID
-// ARGV[2] -> queue key prefix; asynq:{<qname>}:
+// ARGV[2] -> queue key prefix; asynq_learn:{<qname>}:
 // ARGV[3] -> group key prefix
 //
 // Output:
@@ -1066,8 +1066,8 @@ func (r *RDB) RunTask(qname, id string) error {
 // (one of: scheduled, retry, archived) to pending state.
 //
 // Input:
-// KEYS[1] -> zset which holds task ids (e.g. asynq:{<qname>}:scheduled)
-// KEYS[2] -> asynq:{<qname>}:pending
+// KEYS[1] -> zset which holds task ids (e.g. asynq_learn:{<qname>}:scheduled)
+// KEYS[2] -> asynq_learn:{<qname>}:pending
 // --
 // ARGV[1] -> task key prefix
 //
@@ -1140,14 +1140,14 @@ func (r *RDB) ArchiveAllScheduledTasks(qname string) (int64, error) {
 // archiveAllAggregatingCmd archives all tasks in the given group.
 //
 // Input:
-// KEYS[1] -> asynq:{<qname>}:g:<gname>
-// KEYS[2] -> asynq:{<qname>}:archived
-// KEYS[3] -> asynq:{<qname>}:groups
+// KEYS[1] -> asynq_learn:{<qname>}:g:<gname>
+// KEYS[2] -> asynq_learn:{<qname>}:archived
+// KEYS[3] -> asynq_learn:{<qname>}:groups
 // -------
 // ARGV[1] -> current timestamp
 // ARGV[2] -> cutoff timestamp (e.g., 90 days ago)
 // ARGV[3] -> max number of tasks in archive (e.g., 100)
-// ARGV[4] -> task key prefix (asynq:{<qname>}:t:)
+// ARGV[4] -> task key prefix (asynq_learn:{<qname>}:t:)
 // ARGV[5] -> group name
 //
 // Output:
@@ -1201,13 +1201,13 @@ func (r *RDB) ArchiveAllAggregatingTasks(qname, gname string) (int64, error) {
 // the given queue to archived state.
 //
 // Input:
-// KEYS[1] -> asynq:{<qname>}:pending
-// KEYS[2] -> asynq:{<qname>}:archived
+// KEYS[1] -> asynq_learn:{<qname>}:pending
+// KEYS[2] -> asynq_learn:{<qname>}:archived
 // --
 // ARGV[1] -> current timestamp
 // ARGV[2] -> cutoff timestamp (e.g., 90 days ago)
 // ARGV[3] -> max number of tasks in archive (e.g., 100)
-// ARGV[4] -> task key prefix (asynq:{<qname>}:t:)
+// ARGV[4] -> task key prefix (asynq_learn:{<qname>}:t:)
 //
 // Output:
 // integer: Number of tasks archived
@@ -1255,16 +1255,16 @@ func (r *RDB) ArchiveAllPendingTasks(qname string) (int64, error) {
 // archiveTaskCmd is a Lua script that archives a task given a task id.
 //
 // Input:
-// KEYS[1] -> task key (asynq:{<qname>}:t:<task_id>)
-// KEYS[2] -> archived key (asynq:{<qname>}:archived)
-// KEYS[3] -> all groups key (asynq:{<qname>}:groups)
+// KEYS[1] -> task key (asynq_learn:{<qname>}:t:<task_id>)
+// KEYS[2] -> archived key (asynq_learn:{<qname>}:archived)
+// KEYS[3] -> all groups key (asynq_learn:{<qname>}:groups)
 // --
 // ARGV[1] -> id of the task to archive
 // ARGV[2] -> current timestamp
 // ARGV[3] -> cutoff timestamp (e.g., 90 days ago)
 // ARGV[4] -> max number of tasks in archived state (e.g., 100)
-// ARGV[5] -> queue key prefix (asynq:{<qname>}:)
-// ARGV[6] -> group key prefix (asynq:{<qname>}:g:)
+// ARGV[5] -> queue key prefix (asynq_learn:{<qname>}:)
+// ARGV[6] -> group key prefix (asynq_learn:{<qname>}:g:)
 //
 // Output:
 // Numeric code indicating the status:
@@ -1361,13 +1361,13 @@ func (r *RDB) ArchiveTask(qname, id string) error {
 // or retry state from the given queue.
 //
 // Input:
-// KEYS[1] -> ZSET to move task from (e.g., asynq:{<qname>}:retry)
-// KEYS[2] -> asynq:{<qname>}:archived
+// KEYS[1] -> ZSET to move task from (e.g., asynq_learn:{<qname>}:retry)
+// KEYS[2] -> asynq_learn:{<qname>}:archived
 // --
 // ARGV[1] -> current timestamp
 // ARGV[2] -> cutoff timestamp (e.g., 90 days ago)
 // ARGV[3] -> max number of tasks in archive (e.g., 100)
-// ARGV[4] -> task key prefix (asynq:{<qname>}:t:)
+// ARGV[4] -> task key prefix (asynq_learn:{<qname>}:t:)
 //
 // Output:
 // integer: number of tasks archived
@@ -1413,8 +1413,8 @@ func (r *RDB) archiveAll(src, dst, qname string) (int64, error) {
 }
 
 // Input:
-// KEYS[1] -> asynq:{<qname>}:t:<task_id>
-// KEYS[2] -> asynq:{<qname>}:groups
+// KEYS[1] -> asynq_learn:{<qname>}:t:<task_id>
+// KEYS[2] -> asynq_learn:{<qname>}:groups
 // --
 // ARGV[1] -> task ID
 // ARGV[2] -> queue key prefix
@@ -1596,8 +1596,8 @@ func (r *RDB) deleteAll(key, qname string) (int64, error) {
 // deleteAllAggregatingCmd deletes all tasks from the given group.
 //
 // Input:
-// KEYS[1] -> asynq:{<qname>}:g:<gname>
-// KEYS[2] -> asynq:{<qname>}:groups
+// KEYS[1] -> asynq_learn:{<qname>}:g:<gname>
+// KEYS[2] -> asynq_learn:{<qname>}:groups
 // -------
 // ARGV[1] -> task key prefix
 // ARGV[2] -> group name
@@ -1640,7 +1640,7 @@ func (r *RDB) DeleteAllAggregatingTasks(qname, gname string) (int64, error) {
 // deleteAllPendingCmd deletes all pending tasks from the given queue.
 //
 // Input:
-// KEYS[1] -> asynq:{<qname>}:pending
+// KEYS[1] -> asynq_learn:{<qname>}:pending
 // --
 // ARGV[1] -> task key prefix
 //
@@ -1683,12 +1683,12 @@ func (r *RDB) DeleteAllPendingTasks(qname string) (int64, error) {
 // It only check whether active queue is empty before removing.
 //
 // Input:
-// KEYS[1] -> asynq:{<qname>}
-// KEYS[2] -> asynq:{<qname>}:active
-// KEYS[3] -> asynq:{<qname>}:scheduled
-// KEYS[4] -> asynq:{<qname>}:retry
-// KEYS[5] -> asynq:{<qname>}:archived
-// KEYS[6] -> asynq:{<qname>}:lease
+// KEYS[1] -> asynq_learn:{<qname>}
+// KEYS[2] -> asynq_learn:{<qname>}:active
+// KEYS[3] -> asynq_learn:{<qname>}:scheduled
+// KEYS[4] -> asynq_learn:{<qname>}:retry
+// KEYS[5] -> asynq_learn:{<qname>}:archived
+// KEYS[6] -> asynq_learn:{<qname>}:lease
 // --
 // ARGV[1] -> task key prefix
 //
@@ -1743,12 +1743,12 @@ return 1`)
 // It checks whether queue is empty before removing.
 //
 // Input:
-// KEYS[1] -> asynq:{<qname>}:pending
-// KEYS[2] -> asynq:{<qname>}:active
-// KEYS[3] -> asynq:{<qname>}:scheduled
-// KEYS[4] -> asynq:{<qname>}:retry
-// KEYS[5] -> asynq:{<qname>}:archived
-// KEYS[6] -> asynq:{<qname>}:lease
+// KEYS[1] -> asynq_learn:{<qname>}:pending
+// KEYS[2] -> asynq_learn:{<qname>}:active
+// KEYS[3] -> asynq_learn:{<qname>}:scheduled
+// KEYS[4] -> asynq_learn:{<qname>}:retry
+// KEYS[5] -> asynq_learn:{<qname>}:archived
+// KEYS[6] -> asynq_learn:{<qname>}:lease
 // --
 // ARGV[1] -> task key prefix
 //

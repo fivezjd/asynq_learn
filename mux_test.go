@@ -1,4 +1,4 @@
-package asynq
+package asynq_learn
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-// 以下代码演示了mux惯用的套路和配置对象参数的套路 from asynq
+// 以下代码演示了mux惯用的套路和配置对象参数的套路 from asynq_learn
 var (
 	defaultName = "zjd"
 	defaultPort = 8080

@@ -19,7 +19,7 @@ vendor
 /tools/asynq/asynq
 /tools/metrics_exporter/metrics_exporter
 
-# Ignore asynq config file
+# Ignore asynq_learn config file
 .asynq.*
 
 # Ignore editor config files

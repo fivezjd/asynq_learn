@@ -30,13 +30,13 @@ func TestLoggerDebug(t *testing.T) {
 		{
 			desc:    "without trailing newline, logger adds newline",
 			message: "hello, world!",
-			wantPattern: fmt.Sprintf("^asynq: pid=%s %s %s%s DEBUG: hello, world!\n$",
+			wantPattern: fmt.Sprintf("^asynq_learn: pid=%s %s %s%s DEBUG: hello, world!\n$",
 				rgxPID, rgxdate, rgxtime, rgxmicroseconds),
 		},
 		{
 			desc:    "with trailing newline, logger preserves newline",
 			message: "hello, world!\n",
-			wantPattern: fmt.Sprintf("^asynq: pid=%s %s %s%s DEBUG: hello, world!\n$",
+			wantPattern: fmt.Sprintf("^asynq_learn: pid=%s %s %s%s DEBUG: hello, world!\n$",
 				rgxPID, rgxdate, rgxtime, rgxmicroseconds),
 		},
 	}
@@ -64,13 +64,13 @@ func TestLoggerInfo(t *testing.T) {
 		{
 			desc:    "without trailing newline, logger adds newline",
 			message: "hello, world!",
-			wantPattern: fmt.Sprintf("^asynq: pid=%s %s %s%s INFO: hello, world!\n$",
+			wantPattern: fmt.Sprintf("^asynq_learn: pid=%s %s %s%s INFO: hello, world!\n$",
 				rgxPID, rgxdate, rgxtime, rgxmicroseconds),
 		},
 		{
 			desc:    "with trailing newline, logger preserves newline",
 			message: "hello, world!\n",
-			wantPattern: fmt.Sprintf("^asynq: pid=%s %s %s%s INFO: hello, world!\n$",
+			wantPattern: fmt.Sprintf("^asynq_learn: pid=%s %s %s%s INFO: hello, world!\n$",
 				rgxPID, rgxdate, rgxtime, rgxmicroseconds),
 		},
 	}
@@ -98,13 +98,13 @@ func TestLoggerWarn(t *testing.T) {
 		{
 			desc:    "without trailing newline, logger adds newline",
 			message: "hello, world!",
-			wantPattern: fmt.Sprintf("^asynq: pid=%s %s %s%s WARN: hello, world!\n$",
+			wantPattern: fmt.Sprintf("^asynq_learn: pid=%s %s %s%s WARN: hello, world!\n$",
 				rgxPID, rgxdate, rgxtime, rgxmicroseconds),
 		},
 		{
 			desc:    "with trailing newline, logger preserves newline",
 			message: "hello, world!\n",
-			wantPattern: fmt.Sprintf("^asynq: pid=%s %s %s%s WARN: hello, world!\n$",
+			wantPattern: fmt.Sprintf("^asynq_learn: pid=%s %s %s%s WARN: hello, world!\n$",
 				rgxPID, rgxdate, rgxtime, rgxmicroseconds),
 		},
 	}
@@ -132,13 +132,13 @@ func TestLoggerError(t *testing.T) {
 		{
 			desc:    "without trailing newline, logger adds newline",
 			message: "hello, world!",
-			wantPattern: fmt.Sprintf("^asynq: pid=%s %s %s%s ERROR: hello, world!\n$",
+			wantPattern: fmt.Sprintf("^asynq_learn: pid=%s %s %s%s ERROR: hello, world!\n$",
 				rgxPID, rgxdate, rgxtime, rgxmicroseconds),
 		},
 		{
 			desc:    "with trailing newline, logger preserves newline",
 			message: "hello, world!\n",
-			wantPattern: fmt.Sprintf("^asynq: pid=%s %s %s%s ERROR: hello, world!\n$",
+			wantPattern: fmt.Sprintf("^asynq_learn: pid=%s %s %s%s ERROR: hello, world!\n$",
 				rgxPID, rgxdate, rgxtime, rgxmicroseconds),
 		},
 	}
@@ -174,7 +174,7 @@ func TestLoggerDebugf(t *testing.T) {
 			desc:   "Formats message with DEBUG prefix",
 			format: "hello, %s!",
 			args:   []interface{}{"Gopher"},
-			wantPattern: fmt.Sprintf("^asynq: pid=%s %s %s%s DEBUG: hello, Gopher!\n$",
+			wantPattern: fmt.Sprintf("^asynq_learn: pid=%s %s %s%s DEBUG: hello, Gopher!\n$",
 				rgxPID, rgxdate, rgxtime, rgxmicroseconds),
 		},
 	}
@@ -203,7 +203,7 @@ func TestLoggerInfof(t *testing.T) {
 			desc:   "Formats message with INFO prefix",
 			format: "%d,%d,%d",
 			args:   []interface{}{1, 2, 3},
-			wantPattern: fmt.Sprintf("^asynq: pid=%s %s %s%s INFO: 1,2,3\n$",
+			wantPattern: fmt.Sprintf("^asynq_learn: pid=%s %s %s%s INFO: 1,2,3\n$",
 				rgxPID, rgxdate, rgxtime, rgxmicroseconds),
 		},
 	}
@@ -232,7 +232,7 @@ func TestLoggerWarnf(t *testing.T) {
 			desc:   "Formats message with WARN prefix",
 			format: "hello, %s",
 			args:   []interface{}{"Gophers"},
-			wantPattern: fmt.Sprintf("^asynq: pid=%s %s %s%s WARN: hello, Gophers\n$",
+			wantPattern: fmt.Sprintf("^asynq_learn: pid=%s %s %s%s WARN: hello, Gophers\n$",
 				rgxPID, rgxdate, rgxtime, rgxmicroseconds),
 		},
 	}
@@ -261,7 +261,7 @@ func TestLoggerErrorf(t *testing.T) {
 			desc:   "Formats message with ERROR prefix",
 			format: "hello, %s",
 			args:   []interface{}{"Gophers"},
-			wantPattern: fmt.Sprintf("^asynq: pid=%s %s %s%s ERROR: hello, Gophers\n$",
+			wantPattern: fmt.Sprintf("^asynq_learn: pid=%s %s %s%s ERROR: hello, Gophers\n$",
 				rgxPID, rgxdate, rgxtime, rgxmicroseconds),
 		},
 	}

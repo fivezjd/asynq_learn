@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-package asynq
+package asynq_learn
 
 import (
 	"fmt"
@@ -226,11 +226,11 @@ func (i *Inspector) GetTaskInfo(queue, id string) (*TaskInfo, error) {
 	info, err := i.rdb.GetTaskInfo(queue, id)
 	switch {
 	case errors.IsQueueNotFound(err):
-		return nil, fmt.Errorf("asynq: %w", ErrQueueNotFound)
+		return nil, fmt.Errorf("asynq_learn: %w", ErrQueueNotFound)
 	case errors.IsTaskNotFound(err):
-		return nil, fmt.Errorf("asynq: %w", ErrTaskNotFound)
+		return nil, fmt.Errorf("asynq_learn: %w", ErrTaskNotFound)
 	case err != nil:
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	return newTaskInfo(info.Message, info.State, info.NextProcessAt, info.Result), nil
 }
@@ -301,16 +301,16 @@ func Page(n int) ListOption {
 // By default, it retrieves the first 30 tasks.
 func (i *Inspector) ListPendingTasks(queue string, opts ...ListOption) ([]*TaskInfo, error) {
 	if err := base.ValidateQueueName(queue); err != nil {
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	opt := composeListOptions(opts...)
 	pgn := rdb.Pagination{Size: opt.pageSize, Page: opt.pageNum - 1}
 	infos, err := i.rdb.ListPending(queue, pgn)
 	switch {
 	case errors.IsQueueNotFound(err):
-		return nil, fmt.Errorf("asynq: %w", ErrQueueNotFound)
+		return nil, fmt.Errorf("asynq_learn: %w", ErrQueueNotFound)
 	case err != nil:
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	var tasks []*TaskInfo
 	for _, i := range infos {
@@ -329,20 +329,20 @@ func (i *Inspector) ListPendingTasks(queue string, opts ...ListOption) ([]*TaskI
 // By default, it retrieves the first 30 tasks.
 func (i *Inspector) ListActiveTasks(queue string, opts ...ListOption) ([]*TaskInfo, error) {
 	if err := base.ValidateQueueName(queue); err != nil {
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	opt := composeListOptions(opts...)
 	pgn := rdb.Pagination{Size: opt.pageSize, Page: opt.pageNum - 1}
 	infos, err := i.rdb.ListActive(queue, pgn)
 	switch {
 	case errors.IsQueueNotFound(err):
-		return nil, fmt.Errorf("asynq: %w", ErrQueueNotFound)
+		return nil, fmt.Errorf("asynq_learn: %w", ErrQueueNotFound)
 	case err != nil:
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	expired, err := i.rdb.ListLeaseExpired(time.Now(), queue)
 	if err != nil {
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	expiredSet := make(map[string]struct{}) // set of expired message IDs
 	for _, msg := range expired {
@@ -369,16 +369,16 @@ func (i *Inspector) ListActiveTasks(queue string, opts ...ListOption) ([]*TaskIn
 // By default, it retrieves the first 30 tasks.
 func (i *Inspector) ListAggregatingTasks(queue, group string, opts ...ListOption) ([]*TaskInfo, error) {
 	if err := base.ValidateQueueName(queue); err != nil {
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	opt := composeListOptions(opts...)
 	pgn := rdb.Pagination{Size: opt.pageSize, Page: opt.pageNum - 1}
 	infos, err := i.rdb.ListAggregating(queue, group, pgn)
 	switch {
 	case errors.IsQueueNotFound(err):
-		return nil, fmt.Errorf("asynq: %w", ErrQueueNotFound)
+		return nil, fmt.Errorf("asynq_learn: %w", ErrQueueNotFound)
 	case err != nil:
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	var tasks []*TaskInfo
 	for _, i := range infos {
@@ -398,16 +398,16 @@ func (i *Inspector) ListAggregatingTasks(queue, group string, opts ...ListOption
 // By default, it retrieves the first 30 tasks.
 func (i *Inspector) ListScheduledTasks(queue string, opts ...ListOption) ([]*TaskInfo, error) {
 	if err := base.ValidateQueueName(queue); err != nil {
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	opt := composeListOptions(opts...)
 	pgn := rdb.Pagination{Size: opt.pageSize, Page: opt.pageNum - 1}
 	infos, err := i.rdb.ListScheduled(queue, pgn)
 	switch {
 	case errors.IsQueueNotFound(err):
-		return nil, fmt.Errorf("asynq: %w", ErrQueueNotFound)
+		return nil, fmt.Errorf("asynq_learn: %w", ErrQueueNotFound)
 	case err != nil:
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	var tasks []*TaskInfo
 	for _, i := range infos {
@@ -427,16 +427,16 @@ func (i *Inspector) ListScheduledTasks(queue string, opts ...ListOption) ([]*Tas
 // By default, it retrieves the first 30 tasks.
 func (i *Inspector) ListRetryTasks(queue string, opts ...ListOption) ([]*TaskInfo, error) {
 	if err := base.ValidateQueueName(queue); err != nil {
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	opt := composeListOptions(opts...)
 	pgn := rdb.Pagination{Size: opt.pageSize, Page: opt.pageNum - 1}
 	infos, err := i.rdb.ListRetry(queue, pgn)
 	switch {
 	case errors.IsQueueNotFound(err):
-		return nil, fmt.Errorf("asynq: %w", ErrQueueNotFound)
+		return nil, fmt.Errorf("asynq_learn: %w", ErrQueueNotFound)
 	case err != nil:
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	var tasks []*TaskInfo
 	for _, i := range infos {
@@ -456,16 +456,16 @@ func (i *Inspector) ListRetryTasks(queue string, opts ...ListOption) ([]*TaskInf
 // By default, it retrieves the first 30 tasks.
 func (i *Inspector) ListArchivedTasks(queue string, opts ...ListOption) ([]*TaskInfo, error) {
 	if err := base.ValidateQueueName(queue); err != nil {
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	opt := composeListOptions(opts...)
 	pgn := rdb.Pagination{Size: opt.pageSize, Page: opt.pageNum - 1}
 	infos, err := i.rdb.ListArchived(queue, pgn)
 	switch {
 	case errors.IsQueueNotFound(err):
-		return nil, fmt.Errorf("asynq: %w", ErrQueueNotFound)
+		return nil, fmt.Errorf("asynq_learn: %w", ErrQueueNotFound)
 	case err != nil:
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	var tasks []*TaskInfo
 	for _, i := range infos {
@@ -485,16 +485,16 @@ func (i *Inspector) ListArchivedTasks(queue string, opts ...ListOption) ([]*Task
 // By default, it retrieves the first 30 tasks.
 func (i *Inspector) ListCompletedTasks(queue string, opts ...ListOption) ([]*TaskInfo, error) {
 	if err := base.ValidateQueueName(queue); err != nil {
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	opt := composeListOptions(opts...)
 	pgn := rdb.Pagination{Size: opt.pageSize, Page: opt.pageNum - 1}
 	infos, err := i.rdb.ListCompleted(queue, pgn)
 	switch {
 	case errors.IsQueueNotFound(err):
-		return nil, fmt.Errorf("asynq: %w", ErrQueueNotFound)
+		return nil, fmt.Errorf("asynq_learn: %w", ErrQueueNotFound)
 	case err != nil:
-		return nil, fmt.Errorf("asynq: %v", err)
+		return nil, fmt.Errorf("asynq_learn: %v", err)
 	}
 	var tasks []*TaskInfo
 	for _, i := range infos {
@@ -577,16 +577,16 @@ func (i *Inspector) DeleteAllAggregatingTasks(queue, group string) (int, error) 
 // If the task is in active state, it returns a non-nil error.
 func (i *Inspector) DeleteTask(queue, id string) error {
 	if err := base.ValidateQueueName(queue); err != nil {
-		return fmt.Errorf("asynq: %v", err)
+		return fmt.Errorf("asynq_learn: %v", err)
 	}
 	err := i.rdb.DeleteTask(queue, id)
 	switch {
 	case errors.IsQueueNotFound(err):
-		return fmt.Errorf("asynq: %w", ErrQueueNotFound)
+		return fmt.Errorf("asynq_learn: %w", ErrQueueNotFound)
 	case errors.IsTaskNotFound(err):
-		return fmt.Errorf("asynq: %w", ErrTaskNotFound)
+		return fmt.Errorf("asynq_learn: %w", ErrTaskNotFound)
 	case err != nil:
-		return fmt.Errorf("asynq: %v", err)
+		return fmt.Errorf("asynq_learn: %v", err)
 	}
 	return nil
 
@@ -641,16 +641,16 @@ func (i *Inspector) RunAllAggregatingTasks(queue, group string) (int, error) {
 // If the task is in pending or active state, it returns a non-nil error.
 func (i *Inspector) RunTask(queue, id string) error {
 	if err := base.ValidateQueueName(queue); err != nil {
-		return fmt.Errorf("asynq: %v", err)
+		return fmt.Errorf("asynq_learn: %v", err)
 	}
 	err := i.rdb.RunTask(queue, id)
 	switch {
 	case errors.IsQueueNotFound(err):
-		return fmt.Errorf("asynq: %w", ErrQueueNotFound)
+		return fmt.Errorf("asynq_learn: %w", ErrQueueNotFound)
 	case errors.IsTaskNotFound(err):
-		return fmt.Errorf("asynq: %w", ErrTaskNotFound)
+		return fmt.Errorf("asynq_learn: %w", ErrTaskNotFound)
 	case err != nil:
-		return fmt.Errorf("asynq: %v", err)
+		return fmt.Errorf("asynq_learn: %v", err)
 	}
 	return nil
 }
@@ -704,16 +704,16 @@ func (i *Inspector) ArchiveAllAggregatingTasks(queue, group string) (int, error)
 // If the task is in already archived, it returns a non-nil error.
 func (i *Inspector) ArchiveTask(queue, id string) error {
 	if err := base.ValidateQueueName(queue); err != nil {
-		return fmt.Errorf("asynq: err")
+		return fmt.Errorf("asynq_learn: err")
 	}
 	err := i.rdb.ArchiveTask(queue, id)
 	switch {
 	case errors.IsQueueNotFound(err):
-		return fmt.Errorf("asynq: %w", ErrQueueNotFound)
+		return fmt.Errorf("asynq_learn: %w", ErrQueueNotFound)
 	case errors.IsTaskNotFound(err):
-		return fmt.Errorf("asynq: %w", ErrTaskNotFound)
+		return fmt.Errorf("asynq_learn: %w", ErrTaskNotFound)
 	case err != nil:
-		return fmt.Errorf("asynq: %v", err)
+		return fmt.Errorf("asynq_learn: %v", err)
 	}
 	return nil
 }

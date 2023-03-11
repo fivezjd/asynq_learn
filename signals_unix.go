@@ -1,6 +1,7 @@
+//go:build linux || bsd || darwin
 // +build linux bsd darwin
 
-package asynq
+package asynq_learn
 
 import (
 	"os"

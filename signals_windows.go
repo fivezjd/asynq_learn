@@ -1,6 +1,7 @@
+//go:build windows
 // +build windows
 
-package asynq
+package asynq_learn
 
 import (
 	"os"

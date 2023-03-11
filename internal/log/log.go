@@ -72,7 +72,7 @@ func (l *baseLogger) prefixPrint(prefix string, args ...interface{}) {
 
 // newBase creates and returns a new instance of baseLogger.
 func newBase(out io.Writer) *baseLogger {
-	prefix := fmt.Sprintf("asynq: pid=%d ", os.Getpid())
+	prefix := fmt.Sprintf("asynq_learn: pid=%d ", os.Getpid())
 	return &baseLogger{
 		stdlog.New(out, prefix, stdlog.Ldate|stdlog.Ltime|stdlog.Lmicroseconds|stdlog.LUTC),
 	}

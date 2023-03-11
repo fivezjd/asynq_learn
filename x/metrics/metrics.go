@@ -10,12 +10,12 @@ import (
 )
 
 // Namespace used in fully-qualified metrics names.
-const namespace = "asynq"
+const namespace = "asynq_learn"
 
 // QueueMetricsCollector gathers queue metrics.
 // It implements prometheus.Collector interface.
 //
-// All metrics exported from this collector have prefix "asynq".
+// All metrics exported from this collector have prefix "asynq_learn".
 type QueueMetricsCollector struct {
 	inspector *asynq.Inspector
 }

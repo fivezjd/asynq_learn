@@ -23,7 +23,7 @@ var groupCmd = &cobra.Command{
 	Use:   "group <command> [flags]",
 	Short: "Manage groups",
 	Example: heredoc.Doc(`
-		$ asynq group list --queue=myqueue`),
+		$ asynq_learn group list --queue=myqueue`),
 }
 
 var groupListCmd = &cobra.Command{

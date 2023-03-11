@@ -670,7 +670,7 @@ func TestDone(t *testing.T) {
 		Payload:   nil,
 		Timeout:   1800,
 		Deadline:  0,
-		UniqueKey: "asynq:{default}:unique:b0804ec967f48520697662a204f5fe72",
+		UniqueKey: "asynq_learn:{default}:unique:b0804ec967f48520697662a204f5fe72",
 		Queue:     "default",
 	}
 
@@ -864,7 +864,7 @@ func TestMarkAsComplete(t *testing.T) {
 		Payload:   nil,
 		Timeout:   1800,
 		Deadline:  0,
-		UniqueKey: "asynq:{default}:unique:b0804ec967f48520697662a204f5fe72",
+		UniqueKey: "asynq_learn:{default}:unique:b0804ec967f48520697662a204f5fe72",
 		Queue:     "default",
 		Retention: 1800,
 	}

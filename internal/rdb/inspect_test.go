@@ -4558,7 +4558,7 @@ func TestDeleteAllArchivedTasksWithUniqueKey(t *testing.T) {
 		Payload:   nil,
 		Timeout:   1800,
 		Deadline:  0,
-		UniqueKey: "asynq:{default}:unique:task1:nil",
+		UniqueKey: "asynq_learn:{default}:unique:task1:nil",
 		Queue:     "default",
 	}
 	m2 := &base.TaskMessage{
@@ -4567,7 +4567,7 @@ func TestDeleteAllArchivedTasksWithUniqueKey(t *testing.T) {
 		Payload:   nil,
 		Timeout:   1800,
 		Deadline:  0,
-		UniqueKey: "asynq:{default}:unique:task2:nil",
+		UniqueKey: "asynq_learn:{default}:unique:task2:nil",
 		Queue:     "default",
 	}
 	m3 := h.NewTaskMessage("task3", nil)

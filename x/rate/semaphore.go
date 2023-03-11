@@ -1,4 +1,4 @@
-// Package rate contains rate limiting strategies for asynq.Handler(s).
+// Package rate contains rate limiting strategies for asynq_learn.Handler(s).
 package rate
 
 import (
@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/hibiken/asynq"
-	asynqcontext "github.com/hibiken/asynq/internal/context"
+	asynqcontext "github.com/hibiken/asynq_learn/internal/context"
 )
 
 // NewSemaphore creates a counting Semaphore for the given scope with the given number of tokens.
@@ -34,14 +34,14 @@ func NewSemaphore(rco asynq.RedisConnOpt, scope string, maxTokens int) *Semaphor
 	}
 }
 
-// Semaphore is a distributed counting semaphore which can be used to set maxTokens across multiple asynq servers.
+// Semaphore is a distributed counting semaphore which can be used to set maxTokens across multiple asynq_learn servers.
 type Semaphore struct {
 	rc        redis.UniversalClient
 	maxTokens int
 	scope     string
 }
 
-// KEYS[1] -> asynq:sema:<scope>
+// KEYS[1] -> asynq_learn:sema:<scope>
 // ARGV[1] -> max concurrency
 // ARGV[2] -> current time in unix time
 // ARGV[3] -> deadline in unix time
@@ -110,5 +110,5 @@ func (s *Semaphore) Close() error {
 }
 
 func semaphoreKey(scope string) string {
-	return fmt.Sprintf("asynq:sema:%s", scope)
+	return fmt.Sprintf("asynq_learn:sema:%s", scope)
 }

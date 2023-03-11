@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-package asynq
+package asynq_learn
 
 import (
 	"context"
@@ -34,7 +34,7 @@ type muxEntry struct {
 	pattern string
 }
 
-// MiddlewareFunc is a function which receives an asynq.Handler and returns another asynq.Handler.
+// MiddlewareFunc is a function which receives an asynq_learn.Handler and returns another asynq_learn.Handler.
 // Typically, the returned handler is a closure which does something with the context and task passed
 // to it, and then calls the handler passed as parameter to the MiddlewareFunc.
 type MiddlewareFunc func(Handler) Handler
@@ -99,13 +99,13 @@ func (mux *ServeMux) Handle(pattern string, handler Handler) {
 	defer mux.mu.Unlock()
 
 	if strings.TrimSpace(pattern) == "" {
-		panic("asynq: invalid pattern")
+		panic("asynq_learn: invalid pattern")
 	}
 	if handler == nil {
-		panic("asynq: nil handler")
+		panic("asynq_learn: nil handler")
 	}
 	if _, exist := mux.m[pattern]; exist {
-		panic("asynq: multiple registrations for " + pattern)
+		panic("asynq_learn: multiple registrations for " + pattern)
 	}
 
 	if mux.m == nil {
@@ -134,7 +134,7 @@ func appendSorted(es []muxEntry, e muxEntry) []muxEntry {
 // HandleFunc registers the handler function for the given pattern.
 func (mux *ServeMux) HandleFunc(pattern string, handler func(context.Context, *Task) error) {
 	if handler == nil {
-		panic("asynq: nil handler")
+		panic("asynq_learn: nil handler")
 	}
 	mux.Handle(pattern, HandlerFunc(handler))
 }
@@ -154,5 +154,5 @@ func NotFound(ctx context.Context, task *Task) error {
 	return fmt.Errorf("handler not found for task %q", task.Type())
 }
 
-// NotFoundHandler returns a simple task handler that returns a ``not found`` error.
+// NotFoundHandler returns a simple task handler that returns a “not found“ error.
 func NotFoundHandler() Handler { return HandlerFunc(NotFound) }

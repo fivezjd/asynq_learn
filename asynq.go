@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-package asynq
+package asynq_learn
 
 import (
 	"context"
@@ -222,7 +222,7 @@ func (s TaskState) String() string {
 	case TaskStateAggregating:
 		return "aggregating"
 	}
-	panic("asynq: unknown task state")
+	panic("asynq_learn: unknown task state")
 }
 
 // RedisConnOpt is a discriminated union of types that represent Redis connection configuration option.
@@ -438,14 +438,15 @@ func (opt RedisClusterClientOpt) MakeRedisClient() interface{} {
 //
 // Three URI schemes are supported, which are redis:, rediss:, redis-socket:, and redis-sentinel:.
 // Supported formats are:
-//     redis://[:password@]host[:port][/dbnumber]
-//     rediss://[:password@]host[:port][/dbnumber]
-//     redis-socket://[:password@]path[?db=dbnumber]
-//     redis-sentinel://[:password@]host1[:port][,host2:[:port]][,hostN:[:port]][?master=masterName]
+//
+//	redis://[:password@]host[:port][/dbnumber]
+//	rediss://[:password@]host[:port][/dbnumber]
+//	redis-socket://[:password@]path[?db=dbnumber]
+//	redis-sentinel://[:password@]host1[:port][,host2:[:port]][,hostN:[:port]][?master=masterName]
 func ParseRedisURI(uri string) (RedisConnOpt, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
-		return nil, fmt.Errorf("asynq: could not parse redis uri: %v", err)
+		return nil, fmt.Errorf("asynq_learn: could not parse redis uri: %v", err)
 	}
 	switch u.Scheme {
 	case "redis", "rediss":
@@ -455,7 +456,7 @@ func ParseRedisURI(uri string) (RedisConnOpt, error) {
 	case "redis-sentinel":
 		return parseRedisSentinelURI(u)
 	default:
-		return nil, fmt.Errorf("asynq: unsupported uri scheme: %q", u.Scheme)
+		return nil, fmt.Errorf("asynq_learn: unsupported uri scheme: %q", u.Scheme)
 	}
 }
 
@@ -468,7 +469,7 @@ func parseRedisURI(u *url.URL) (RedisConnOpt, error) {
 		xs := strings.Split(strings.Trim(u.Path, "/"), "/")
 		db, err = strconv.Atoi(xs[0])
 		if err != nil {
-			return nil, fmt.Errorf("asynq: could not parse redis uri: database number should be the first segment of the path")
+			return nil, fmt.Errorf("asynq_learn: could not parse redis uri: database number should be the first segment of the path")
 		}
 	}
 	var password string
@@ -492,7 +493,7 @@ func parseRedisURI(u *url.URL) (RedisConnOpt, error) {
 }
 
 func parseRedisSocketURI(u *url.URL) (RedisConnOpt, error) {
-	const errPrefix = "asynq: could not parse redis socket uri"
+	const errPrefix = "asynq_learn: could not parse redis socket uri"
 	if len(u.Path) == 0 {
 		return nil, fmt.Errorf("%s: path does not exist", errPrefix)
 	}

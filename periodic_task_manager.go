@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license
 // that can be found in the LICENSE file.
 
-package asynq
+package asynq_learn
 
 import (
 	"crypto/sha256"
@@ -109,13 +109,13 @@ func validatePeriodicTaskConfig(c *PeriodicTaskConfig) error {
 // Start returns any error encountered at start up time.
 func (mgr *PeriodicTaskManager) Start() error {
 	if mgr.s == nil || mgr.p == nil {
-		panic("asynq: cannot start uninitialized PeriodicTaskManager; use NewPeriodicTaskManager to initialize")
+		panic("asynq_learn: cannot start uninitialized PeriodicTaskManager; use NewPeriodicTaskManager to initialize")
 	}
 	if err := mgr.initialSync(); err != nil {
-		return fmt.Errorf("asynq: %v", err)
+		return fmt.Errorf("asynq_learn: %v", err)
 	}
 	if err := mgr.s.Start(); err != nil {
-		return fmt.Errorf("asynq: %v", err)
+		return fmt.Errorf("asynq_learn: %v", err)
 	}
 	mgr.wg.Add(1)
 	go func() {
