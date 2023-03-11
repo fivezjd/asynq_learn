@@ -98,6 +98,7 @@ type Logger struct {
 }
 
 // Level represents a log level.
+// 在进行数据计算时，Golang 会将 int8 类型自动转换为 int32 类型进行计算  这就是选择int32的原因
 type Level int32
 
 const (

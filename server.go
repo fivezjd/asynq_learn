@@ -33,6 +33,9 @@ import (
 // will be kept in the archive set.
 // Note that the archive size is finite and once it reaches its max size,
 // oldest tasks in the archive will be deleted.
+// 服务器负责任务处理和任务生命周期管理。服务器从队列中提取任务并处理它们。
+// 如果任务处理不成功，服务器将安排它重试。任务将重试，直到任务得到成功处理或达到其最大重试计数。
+// 如果任务用尽了重试次数，它将被移动到存档中，并保留在存档集中。请注意，存档大小是有限的，一旦达到其最大大小，存档中最早的任务将被删除。
 type Server struct {
 	logger *log.Logger
 
@@ -606,31 +609,45 @@ func (srv *Server) Run(handler Handler) error {
 //
 // Start returns any error encountered at server startup time.
 // If the server has already been shutdown, ErrServerClosed is returned.
+// “启动”启动工作服务器。服务器启动后，它会将任务从队列中拉出，
+// 并为每个任务启动一个 worker goroutine，然后调用 Handler 来处理它。任务由工作线程并发处理，
+// 最多处理 Config.Concurrency 中指定的并发数。Start 返回服务器启动时遇到的任何错误。如果服务器已关闭，则返回 ErrServerClosed。
 func (srv *Server) Start(handler Handler) error {
 	if handler == nil {
 		return fmt.Errorf("asynq_learn: server cannot run with nil handler")
 	}
 	srv.processor.handler = handler
-
+	// 标记服务器状态 ，一般一个功能性复杂的结构体会公开一个大写的方法，然后调用其同名的小写的方法，在这个小写的方法中标记服务器（当前结构体）主程序的状态
+	// 然后再依次启动当前结构体其他成员的工作 如下所示
 	if err := srv.start(); err != nil {
 		return err
 	}
+	// 日志的封装 ToDo
 	srv.logger.Info("Starting processing")
-
+	// 心跳启动 ToDo
 	srv.heartbeater.start(&srv.wg)
+	// 健康监测 ToDo
 	srv.healthchecker.start(&srv.wg)
+	// 订阅启动 ToDo
 	srv.subscriber.start(&srv.wg)
+	// 同步数据 ToDo
 	srv.syncer.start(&srv.wg)
+	// 异常恢复 ToDo
 	srv.recoverer.start(&srv.wg)
+	// 代理 ToDo
 	srv.forwarder.start(&srv.wg)
+	// 处理器 ToDo
 	srv.processor.start(&srv.wg)
+	// 清洁 ToDo
 	srv.janitor.start(&srv.wg)
+	// 聚合任务 ToDo
 	srv.aggregator.start(&srv.wg)
 	return nil
 }
 
 // Checks server state and returns an error if pre-condition is not met.
 // Otherwise it sets the server state to active.
+// 检查服务器状态，如果不满足前提条件，则返回错误。否则，它将服务器状态设置为活动
 func (srv *Server) start() error {
 	srv.state.mu.Lock()
 	defer srv.state.mu.Unlock()
