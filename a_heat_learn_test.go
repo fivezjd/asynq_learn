@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"os"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -22,12 +24,23 @@ import (
 // 模拟心跳服务、模拟zset的使用、使用once、使用lua
 
 func TestName(t *testing.T) {
-	var s ServerH
+	s := &ServerH{}
 	s.Run()
 }
 
+func Test1(t *testing.T) {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379", // use default Addr
+		Password: "",               // no password set
+		DB:       0,                // use default DB
+	})
+
+	pong, err := rdb.Ping(context.Background()).Result()
+	fmt.Println(pong, err)
+}
+
 type ServerH struct {
-	heat *HeatS
+	Heat *HeatS
 }
 
 type HeatS struct {
@@ -35,12 +48,13 @@ type HeatS struct {
 }
 
 func (a *ServerH) Run() {
+	a.Heat = &HeatS{broker: redis.NewClient(&redis.Options{Addr: "localhost:6379"})}
 	var wg sync.WaitGroup
 	// 三种方式结束上下文
 	// ctx, cancel := context.WithCancel(context.Background())
 	// ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second*20))
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	a.heat.Run(ctx, &wg)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*100)
+	a.Heat.Run(ctx, &wg)
 	// 一分钟之后结束心跳程序
 	time.AfterFunc(time.Minute, func() {
 		cancel()
@@ -52,6 +66,7 @@ func (s *HeatS) Run(ctx context.Context, wg *sync.WaitGroup) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		s.beat()
 		t := time.NewTimer(time.Second * 5)
 		for {
 			select {
@@ -59,6 +74,7 @@ func (s *HeatS) Run(ctx context.Context, wg *sync.WaitGroup) {
 			case <-t.C:
 				t.Reset(time.Second * 5)
 				fmt.Println("timer is reset")
+				s.beat()
 				// 每隔5秒做一些事情
 			case <-ctx.Done():
 				fmt.Println("心跳监测结束")
@@ -66,4 +82,14 @@ func (s *HeatS) Run(ctx context.Context, wg *sync.WaitGroup) {
 			}
 		}
 	}()
+}
+
+func (s *HeatS) beat() {
+	// 实现Redis zset操作
+	s.broker.ZAdd(context.Background(), strconv.Itoa(os.Getpid()), &redis.Z{
+		Score:  float64(time.Now().Unix()),
+		Member: 1,
+	})
+	fmt.Println(time.Now().Unix())
+	fmt.Println(strconv.Itoa(os.Getpid()))
 }
