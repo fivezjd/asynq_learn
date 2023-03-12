@@ -676,6 +676,7 @@ func (l *Lease) Reset(expirationTime time.Time) bool {
 
 // Sends a notification to lessee about expired lease
 // Returns true if notification was sent, returns false if the lease is still valid and notification was not sent.
+// 向承租人发送有关租约过期的通知 如果发送了通知，则返回 true;如果租约仍然有效且通知未发送，则返回 false
 func (l *Lease) NotifyExpiration() bool {
 	if l.IsValid() {
 		return false

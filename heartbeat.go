@@ -109,6 +109,7 @@ type workerInfo struct {
 }
 
 func (h *heartbeater) start(wg *sync.WaitGroup) {
+	h.logger.Info("心跳开始")
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -128,12 +129,16 @@ func (h *heartbeater) start(wg *sync.WaitGroup) {
 
 			case <-timer.C:
 				h.beat()
+				// 5秒后重置timer
+				h.logger.Info("5秒的timer")
 				timer.Reset(h.interval)
 
 			case w := <-h.starting:
+				h.logger.Info("心跳中任务开始的传递", w)
 				h.workers[w.msg.ID] = w
 
 			case msg := <-h.finished:
+				h.logger.Info("心跳中任务完成的传递", msg)
 				delete(h.workers, msg.ID)
 			}
 		}
@@ -146,7 +151,7 @@ func (h *heartbeater) beat() {
 	h.state.mu.Lock()
 	srvStatus := h.state.value.String()
 	h.state.mu.Unlock()
-
+	// 当前server 的一些信息
 	info := base.ServerInfo{
 		Host:              h.host,
 		PID:               h.pid,
@@ -161,6 +166,7 @@ func (h *heartbeater) beat() {
 
 	var ws []*base.WorkerInfo
 	idsByQueue := make(map[string][]string)
+	// 遍历待处理的任务写入ws
 	for id, w := range h.workers {
 		ws = append(ws, &base.WorkerInfo{
 			Host:     h.host,
@@ -186,13 +192,15 @@ func (h *heartbeater) beat() {
 	if err := h.broker.WriteServerState(&info, ws, h.interval*2); err != nil {
 		h.logger.Errorf("Failed to write server state data: %v", err)
 	}
-
+	// 当前项目队列是用有序集合实现的，score用来做过期时间，这是一个经典应用
 	for qname, ids := range idsByQueue {
+		// 修改有序集合中元素的数据 延长30秒
 		expirationTime, err := h.broker.ExtendLease(qname, ids...)
 		if err != nil {
 			h.logger.Errorf("Failed to extend lease for tasks %v: %v", ids, err)
 			continue
 		}
+		// 在内存中更新这30秒的数据
 		for _, id := range ids {
 			if l := h.workers[id].lease; !l.Reset(expirationTime) {
 				h.logger.Warnf("Lease reset failed for %s; lease deadline: %v", id, l.Deadline())

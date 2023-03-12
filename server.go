@@ -468,6 +468,7 @@ func NewServer(r RedisConnOpt, cfg Config) *Server {
 		requestsCh: syncCh,
 		interval:   5 * time.Second,
 	})
+	// 心跳相关配置
 	heartbeater := newHeartbeater(heartbeaterParams{
 		logger:         logger,
 		broker:         rdb,
@@ -591,7 +592,9 @@ var ErrServerClosed = errors.New("asynq_learn: Server closed")
 // goroutines to process the tasks.
 //
 // Run returns any error encountered at server startup time.
-// If the server has already been shutdown, ErrServerClosed is returned.
+// If the server has already been shutdown, ErrServerClosed is returned.Run
+// 启动任务处理并阻止，直到收到退出程序的 OS 信号。一旦它收到信号，它就会优雅地关闭所有活动的工作线程和其他 goroutines 来处理任务。
+// Run 返回服务器启动时遇到的任何错误。如果服务器已关闭，则返回 ErrServerClosed。
 func (srv *Server) Run(handler Handler) error {
 	if err := srv.Start(handler); err != nil {
 		return err
@@ -622,9 +625,9 @@ func (srv *Server) Start(handler Handler) error {
 	if err := srv.start(); err != nil {
 		return err
 	}
-	// 日志的封装 ToDo
+	// 日志的封装
 	srv.logger.Info("Starting processing")
-	// 心跳启动 ToDo
+	// 心跳启动 负责监听客户端传递过来的task， 延长队列元素的score ,同步当前服务的数据至redis
 	srv.heartbeater.start(&srv.wg)
 	// 健康监测 ToDo
 	srv.healthchecker.start(&srv.wg)
