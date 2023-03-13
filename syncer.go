@@ -13,6 +13,7 @@ import (
 
 // syncer is responsible for queuing up failed requests to redis and retry
 // those requests to sync state between the background process and redis.
+// 同步器负责将失败的请求排队到 Redis 并重试这些请求以在后台进程和 Redis 之间同步状态。
 type syncer struct {
 	logger *log.Logger
 
@@ -70,6 +71,7 @@ func (s *syncer) start(wg *sync.WaitGroup) {
 				return
 			case req := <-s.requestsCh:
 				requests = append(requests, req)
+				// 5秒处理一次失败的任务
 			case <-time.After(s.interval):
 				var temp []*syncRequest
 				for _, req := range requests {
