@@ -127,6 +127,7 @@ func (a *aggregator) exec(t time.Time) {
 	}
 }
 
+// 聚合任务
 func (a *aggregator) aggregate(t time.Time) {
 	defer func() { <-a.sema /* release token */ }()
 	for _, qname := range a.queues {

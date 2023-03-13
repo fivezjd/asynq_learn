@@ -57,7 +57,9 @@ func (mux *ServeMux) ProcessTask(ctx context.Context, task *Task) error {
 // Handler also returns the registered pattern that matches the task.
 //
 // If there is no registered handler that applies to the task,
-// handler returns a 'not found' handler which returns an error.
+// handler returns a 'not found' handler which returns an error. 处理程序返回用于给定任务的处理程序。
+// 它始终返回一个非 nil 处理程序。处理程序还返回与任务匹配的已注册模式。
+// 如果没有适用于任务的已注册处理程序，处理程序将返回返回错误的“未找到”处理程序。
 func (mux *ServeMux) Handler(t *Task) (h Handler, pattern string) {
 	mux.mu.RLock()
 	defer mux.mu.RUnlock()

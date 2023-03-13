@@ -643,9 +643,9 @@ func (srv *Server) Start(handler Handler) error {
 	srv.forwarder.start(&srv.wg)
 	// 处理器
 	srv.processor.start(&srv.wg)
-	// 清洁 ToDo
+	// 清洁
 	srv.janitor.start(&srv.wg)
-	// 聚合任务 ToDo
+	// 聚合任务 作用就是聚合所有的消息到一个handler中，然后在这个handler中统一处理消息
 	srv.aggregator.start(&srv.wg)
 	return nil
 }

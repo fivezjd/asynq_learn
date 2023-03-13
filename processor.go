@@ -251,6 +251,7 @@ func (p *processor) exec() {
 					p.handleFailedMessage(ctx, lease, msg, resErr)
 					return
 				}
+				// 任务执行成功
 				p.handleSucceededMessage(lease, msg)
 			}
 		}()
