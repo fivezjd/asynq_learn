@@ -171,6 +171,7 @@ func (p *processor) exec() {
 		return
 	case p.sema <- struct{}{}: // acquire token
 		qnames := p.queues()
+		// 取出一个任务
 		msg, leaseExpirationTime, err := p.broker.Dequeue(qnames...)
 		switch {
 		case errors.Is(err, errors.ErrNoProcessableTask):
@@ -228,6 +229,7 @@ func (p *processor) exec() {
 						ctx:    ctx,
 					},
 				)
+				// 执行handler
 				resCh <- p.perform(ctx, task)
 			}()
 
@@ -386,9 +388,13 @@ func (p *processor) archive(l *base.Lease, msg *base.TaskMessage, e error) {
 // Queue names is sorted by their priority level if strict-priority is true.
 // If strict-priority is false, then the order of queue names are roughly based on
 // the priority level but randomized in order to avoid starving low priority queues.
+// 队列返回要查询的队列列表。
+// 队列名称的顺序基于每个队列的优先级。如果严格优先级为 true，则队列名称按其优先级排序。
+// 如果严格优先级为 false，则队列名称的顺序大致基于优先级级别，但会随机化，以避免低优先级队列匮乏
 func (p *processor) queues() []string {
 	// skip the overhead of generating a list of queue names
 	// if we are processing one queue.
+	// 队列配置中只有一个队列的话，之前返回这个队列
 	if len(p.queueConfig) == 1 {
 		for qname := range p.queueConfig {
 			return []string{qname}
@@ -398,21 +404,26 @@ func (p *processor) queues() []string {
 		return p.orderedQueues
 	}
 	var names []string
+	// 这块代码实现了队列的权重
 	for qname, priority := range p.queueConfig {
 		for i := 0; i < priority; i++ {
 			names = append(names, qname)
 		}
 	}
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	r.Shuffle(len(names), func(i, j int) { names[i], names[j] = names[j], names[i] })
+	r.Shuffle(len(names), func(i, j int) {
+		names[i], names[j] = names[j], names[i]
+	})
 	return uniq(names, len(p.queueConfig))
 }
 
 // perform calls the handler with the given task.
 // If the call returns without panic, it simply returns the value,
 // otherwise, it recovers from panic and returns an error.
+// 执行调用具有给定任务的处理程序。如果调用返回时没有恐慌，则它只返回值，否则，它将从恐慌中恢复并返回错误。 执行任务的handler
 func (p *processor) perform(ctx context.Context, task *Task) (err error) {
 	defer func() {
+		// 捕获 hand 不存在的异常
 		if x := recover(); x != nil {
 			p.logger.Errorf("recovering from panic. See the stack trace below for details:\n%s", string(debug.Stack()))
 			_, file, line, ok := runtime.Caller(1) // skip the first frame (panic itself)
@@ -430,11 +441,13 @@ func (p *processor) perform(ctx context.Context, task *Task) (err error) {
 			}
 		}
 	}()
+	// 执行对应的handler
 	return p.handler.ProcessTask(ctx, task)
 }
 
 // uniq dedupes elements and returns a slice of unique names of length l.
 // Order of the output slice is based on the input list.
+// Uniq 重复数据删除元素并返回长度为 L 的唯一名称切片。输出切片的顺序基于输入列表。
 func uniq(names []string, l int) []string {
 	var res []string
 	seen := make(map[string]struct{})

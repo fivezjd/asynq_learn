@@ -581,6 +581,7 @@ type HandlerFunc func(context.Context, *Task) error
 
 // ProcessTask calls fn(ctx, task)
 func (fn HandlerFunc) ProcessTask(ctx context.Context, task *Task) error {
+	fmt.Println("强制类型转换后就继承了这个方法")
 	return fn(ctx, task)
 }
 
@@ -634,13 +635,13 @@ func (srv *Server) Start(handler Handler) error {
 	srv.healthchecker.start(&srv.wg)
 	// 订阅启动 可以在命令行中发布取消的任务ID，然后subscriber 监听到后，在map[id]cancel 中找到对应的取消函数，然后执行
 	srv.subscriber.start(&srv.wg)
-	// 同步数据 ToDo
+	// 重试错误
 	srv.syncer.start(&srv.wg)
-	// 异常恢复 ToDo
+	// 异常恢复
 	srv.recoverer.start(&srv.wg)
-	// 代理 ToDo
+	// 代理
 	srv.forwarder.start(&srv.wg)
-	// 处理器 ToDo
+	// 处理器
 	srv.processor.start(&srv.wg)
 	// 清洁 ToDo
 	srv.janitor.start(&srv.wg)

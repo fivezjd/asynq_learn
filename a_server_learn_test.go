@@ -10,10 +10,8 @@ func TestClient(t *testing.T) {
 	client := NewClient(RedisClientOpt{
 		Addr: "localhost:6379",
 	})
-	t1 := NewTask("task1", []byte{1, 2}, groupOption("group-t"))
-	t2 := NewTask("task2", []byte{3, 4}, groupOption("group-t"))
+	t1 := NewTask("aggregated-task", []byte{1, 2})
 	client.Enqueue(t1)
-	client.Enqueue(t2)
 }
 
 func TestMaxSize(t *testing.T) {
@@ -53,6 +51,7 @@ func TestMaxSize1(t *testing.T) {
 	mux := NewServeMux()
 	mux.HandleFunc("aggregated-task", func(ctx context.Context, task *Task) error {
 		t.Log(string(task.payload))
+		t.Log(23323)
 		return nil
 	})
 	server.Run(mux)

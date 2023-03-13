@@ -239,6 +239,8 @@ return nil`)
 // off a queue if one exists and returns the message and its lease expiration time.
 // Dequeue skips a queue if the queue is paused.
 // If all queues are empty, ErrNoProcessableTask error is returned.
+// 按顺序取消给定队列的查询，并从队列中弹出任务消息（如果存在），并返回消息及其租约到期时间。
+// 如果队列已暂停，则取消排队将跳过队列。如果所有队列都为空，则返回 ErrNoProcessableTask 错误。
 func (r *RDB) Dequeue(qnames ...string) (msg *base.TaskMessage, leaseExpirationTime time.Time, err error) {
 	var op errors.Op = "rdb.Dequeue"
 	for _, qname := range qnames {
@@ -254,6 +256,7 @@ func (r *RDB) Dequeue(qnames ...string) (msg *base.TaskMessage, leaseExpirationT
 			base.TaskKeyPrefix(qname),
 		}
 		res, err := dequeueCmd.Run(context.Background(), r.client, keys, argv...).Result()
+		// 队列不存在
 		if err == redis.Nil {
 			continue
 		} else if err != nil {
