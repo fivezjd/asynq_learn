@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-// 如何在服务中封装一个日志服务
+// 如何在log封装一个日志服务
 
 type ServerA struct {
 	log *LoggerA

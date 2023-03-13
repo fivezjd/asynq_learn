@@ -200,6 +200,7 @@ func (p *processor) exec() {
 			}()
 
 			ctx, cancel := asynqcontext.New(p.baseCtxFn(), msg, deadline)
+			// 添加任务ID和取消函数映射到 map中
 			p.cancelations.Add(msg.ID, cancel)
 			defer func() {
 				cancel()

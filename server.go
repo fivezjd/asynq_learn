@@ -461,6 +461,7 @@ func NewServer(r RedisConnOpt, cfg Config) *Server {
 	finished := make(chan *base.TaskMessage)
 	syncCh := make(chan *syncRequest)
 	srvState := &serverState{value: srvStateNew}
+	// 创建任务ID和取消的映射
 	cancels := base.NewCancelations()
 
 	syncer := newSyncer(syncerParams{
@@ -629,9 +630,9 @@ func (srv *Server) Start(handler Handler) error {
 	srv.logger.Info("Starting processing")
 	// 心跳启动 负责监听客户端传递过来的task， 延长队列元素的score ,同步当前服务的数据至redis
 	srv.heartbeater.start(&srv.wg)
-	// 健康监测 ToDo
+	// 健康监测
 	srv.healthchecker.start(&srv.wg)
-	// 订阅启动 ToDo
+	// 订阅启动 可以在命令行中发布取消的任务ID，然后subscriber 监听到后，在map[id]cancel 中找到对应的取消函数，然后执行
 	srv.subscriber.start(&srv.wg)
 	// 同步数据 ToDo
 	srv.syncer.start(&srv.wg)
