@@ -601,7 +601,9 @@ func (srv *Server) Run(handler Handler) error {
 	if err := srv.Start(handler); err != nil {
 		return err
 	}
+	// 信号处理 ToDo
 	srv.waitForSignals()
+	// 退出时的任务
 	srv.Shutdown()
 	return nil
 }
