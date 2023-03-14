@@ -603,7 +603,7 @@ func (srv *Server) Run(handler Handler) error {
 	}
 	// 信号处理 ToDo
 	srv.waitForSignals()
-	// 退出时的任务
+	// 退出时的任务  依次向各个子结构体的done通道传递信号即可
 	srv.Shutdown()
 	return nil
 }

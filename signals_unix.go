@@ -19,6 +19,9 @@ func (srv *Server) waitForSignals() {
 	srv.logger.Info("Send signal TERM or INT to terminate the process")
 
 	sigs := make(chan os.Signal, 1)
+	// 键盘Ctrl+C SIGINT
+	// kill pid 不加-9 SIGTERM
+	//
 	signal.Notify(sigs, unix.SIGTERM, unix.SIGINT, unix.SIGTSTP)
 	for {
 		sig := <-sigs
